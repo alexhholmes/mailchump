@@ -3,15 +3,6 @@ info:
   version: 1.0.0
   title: A simple newsletter subscription API
 paths:
-  /healthcheck:
-    get:
-      responses:
-        '200':
-          description: healthcheck response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Health'
   /subscribe:
     post:
       requestBody:
@@ -66,6 +57,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
+  /healthcheck:
+    get:
+      responses:
+        '200':
+          description: healthcheck response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
 components:
   schemas:
     # base types
@@ -85,6 +85,7 @@ components:
           email:
             type: string
             example: user@example.com
+
     SubscriptionResponse:
         type: object
         required:

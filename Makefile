@@ -21,13 +21,16 @@ package-dev:
 	docker build --target dev --tag mailchump:dev .
 
 run: gen
-	ENVIRONMENT=DEV go run cmd/main.go
+	ENVIRONMENT=DEV go run cmd/local.go
 
-run-container: package-dev
+run-container: package-dev compose-down
 	docker compose up --force-recreate
 
-run-db: package-dev
+run-db: package-dev compose-down
 	INIT_ONLY=true docker compose up -d --force-recreate
+
+compose-down:
+	docker compose down
 
 test: gen
 	go test ./...

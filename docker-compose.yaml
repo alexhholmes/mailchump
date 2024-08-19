@@ -2,19 +2,29 @@ services:
   mailchump:
     image: mailchump:dev
     restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:6060:6060" # Go pprof
+    networks:
+      - db-net
     environment:
       ENVIRONMENT: "DEV"
     depends_on:
       - postgres
     entrypoint: ["./wait-for-postgres.sh", "./mailchump", "username", "mailchump"]
-    network_mode: host
 
   postgres:
     image: postgres:latest
     restart: always
     ports:
       - "127.0.0.1:5432:5432" # Expose the port so we can connect to it from Datagrip
+    networks:
+        - db-net
     environment:
       POSTGRES_PASSWORD: "password"
       POSTGRES_USER: "username"
       POSTGRES_DB: "mailchump"
+
+networks:
+  db-net:
+    driver: bridge

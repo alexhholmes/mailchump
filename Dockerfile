@@ -10,6 +10,7 @@ WORKDIR /app
 COPY --from=builder-dev /app/scripts/wait-for-postgres.sh wait-for-postgres.sh
 COPY --from=builder-dev /app/bin/mailchump mailchump
 EXPOSE 8080
+EXPOSE 6060
 
 ENTRYPOINT ["./mailchump"]
 FROM golang:latest AS builder-prod

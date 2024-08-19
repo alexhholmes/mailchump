@@ -37,7 +37,7 @@ func Run() error {
 
 	s := &http.Server{
 		Handler: h,
-		Addr:    "localhost:8080",
+		Addr:    "0.0.0.0:8080",
 	}
 
 	slog.Info("Server is listening", "address", s.Addr)

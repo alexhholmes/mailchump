@@ -8,7 +8,7 @@ import (
 
 func Init() (*sql.DB, error) {
 	// Open a connection to postgres
-	connStr := "user=username dbname=mailchump sslmode=disable password=password"
+	connStr := "host=postgres user=username dbname=mailchump sslmode=disable password=password"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open a DB connection: %w", err)

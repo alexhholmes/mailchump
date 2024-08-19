@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"mailchump/postgres"
 	"net/http"
 
 	_ "github.com/lib/pq"
@@ -18,7 +19,7 @@ type Server struct {
 }
 
 func NewServer() (Server, error) {
-	db, err := sql.Open("postgres", "user=username dbname=mailchump sslmode=disable password=password")
+	db, err := postgres.Init()
 	if err != nil {
 		return Server{}, fmt.Errorf("failed to open a DB connection: %w", err)
 	}
@@ -26,17 +27,6 @@ func NewServer() (Server, error) {
 	return Server{
 		db: db,
 	}, nil
-}
-
-// GetHealthcheck returns HTTP status 200.
-// GET /ping
-func (s Server) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
-	resp := gen.Health{
-		Status: "pong",
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // PostSubscribe returns HTTP status 200.
@@ -105,6 +95,17 @@ func (s Server) PostUnsubscribe(w http.ResponseWriter, r *http.Request) {
 	resp := gen.SubscriptionResponse{
 		Status: "Unsubscribed",
 		Email:  &req.Email,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// GetHealthcheck returns HTTP status 200.
+// GET /ping
+func (s Server) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
+	resp := gen.Health{
+		Status: "OK",
 	}
 
 	w.WriteHeader(http.StatusOK)

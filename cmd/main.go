@@ -1,8 +1,9 @@
 package main
 
 import (
-	"mailchump/api"
 	"os"
+
+	"mailchump/api"
 )
 
 func main() {
