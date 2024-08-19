@@ -1,0 +1,111 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: A simple newsletter subscription API
+paths:
+  /healthcheck:
+    get:
+      responses:
+        '200':
+          description: healthcheck response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /subscribe:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '200':
+          description: subscription response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /unsubscribe:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '200':
+          description: unsubscription response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+components:
+  schemas:
+    # base types
+    Health:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: ok
+    Subscription:
+        type: object
+        required:
+          - email
+        properties:
+          email:
+            type: string
+            example: user@example.com
+    SubscriptionResponse:
+        type: object
+        required:
+          - status
+        properties:
+          status:
+            type: string
+            example: subscribed
+    BadRequest:
+        type: object
+        required:
+          - message
+        properties:
+          message:
+            type: string
+            example: bad request
+    InternalServerError:
+        type: object
+        required:
+          - message
+        properties:
+          message:
+            type: string
+            example: internal server error
