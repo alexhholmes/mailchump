@@ -19,7 +19,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Subscription'
+              $ref: '#/components/schemas/SubscriptionRequest'
       responses:
         '200':
           description: subscription response
@@ -46,7 +46,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Subscription'
+              $ref: '#/components/schemas/SubscriptionRequest'
       responses:
         '200':
           description: unsubscription response
@@ -77,7 +77,7 @@ components:
         status:
           type: string
           example: ok
-    Subscription:
+    SubscriptionRequest:
         type: object
         required:
           - email
@@ -93,6 +93,9 @@ components:
           status:
             type: string
             example: subscribed
+          email:
+            type: string
+            example:
     BadRequest:
         type: object
         required:

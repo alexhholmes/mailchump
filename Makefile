@@ -1,11 +1,30 @@
+clean:
+	rm -rf bin
+
 gen: api.yaml
-	oapi-codegen --config=config.yaml api.yaml
+	mkdir -p gen
+	oapi-codegen --config=gen/config.yaml api.yaml
 
 build: gen
-	go build -mod=mod -o bin/server cmd/main.go
+	go build -mod=mod -o bin/mailchump cmd/main.go
+
+build-docker: gen  # For use in Dockerfile
+	CGO_ENABLED=0 GOOS=linux go build -mod=mod -o bin/mailchump cmd/main.go
+
+build-docker-dev: gen  # For use in Dockerfile
+	CGO_ENABLED=0 GOOS=linux go build -mod=mod -o bin/mailchump cmd/local.go
+
+package:
+	docker build --tag mailchump:latest .
+
+package-dev:
+	docker build --target dev --tag mailchump:dev .
 
 run: gen
-	go run cmd/main.go
+	ENVIRONMENT=DEV go run cmd/main.go
+
+run-container: package-dev
+	docker compose up
 
 test: gen
 	go test ./...
