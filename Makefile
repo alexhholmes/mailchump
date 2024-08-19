@@ -24,7 +24,10 @@ run: gen
 	ENVIRONMENT=DEV go run cmd/main.go
 
 run-container: package-dev
-	docker compose up
+	docker compose up --force-recreate
+
+run-db: package-dev
+	INIT_ONLY=true docker compose up -d --force-recreate
 
 test: gen
 	go test ./...

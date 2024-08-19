@@ -2,8 +2,6 @@ services:
   mailchump:
     image: mailchump:dev
     restart: always
-    ports:
-      - 8080:8080
     environment:
       ENVIRONMENT: "DEV"
     depends_on:

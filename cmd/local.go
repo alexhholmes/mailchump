@@ -25,13 +25,25 @@ func init() {
 		_ = db.Close()
 	}(db)
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS subscribers (email VARCHAR(255) PRIMARY KEY)")
+	query := `CREATE TABLE IF NOT EXISTS subscriptions (
+	    id UUID PRIMARY KEY,
+		email VARCHAR(255) NOT NULL UNIQUE,
+		"from" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		until TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+	_, err = db.Exec(query)
 	if err != nil {
 		log.Fatalf("Could not execute DB initialization query: %s", err.Error())
 	}
 }
 
 func main() {
+	// Lets us initialize the database and add test data without running the server.
+	// Useful for GoLand's live SQL testing feature.
+	if os.Getenv("INIT_ONLY") != "" {
+		return
+	}
+
 	// TODO implement os signal handling
 	err := api.Run()
 	if err != nil {

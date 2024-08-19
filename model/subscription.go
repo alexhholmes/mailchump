@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"mailchump/gen"
 )
 
@@ -16,7 +18,11 @@ var (
 
 // Subscription defines model for Subscription.
 type Subscription struct {
-	Email string `json:"email"`
+	ID     uuid.UUID `json:"id"`
+	Email  string    `json:"email"`
+	Active bool      `json:"active"`
+	From   time.Time `json:"from"`
+	Until  time.Time `json:"until"`
 }
 
 func (s *Subscription) Validate() error {
@@ -36,6 +42,16 @@ func (s *Subscription) Create(db *sql.DB) error {
 	_, err := db.Exec("INSERT INTO subscribers (email) VALUES ($1)", s.Email)
 	if err != nil {
 		return fmt.Errorf("failed to write subscriber: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Subscription) Get(db *sql.DB) error {
+	row := db.QueryRow("SELECT email FROM subscribers WHERE email = $1", s.Email)
+	err := row.Scan(&s.Email)
+	if err != nil {
+		return fmt.Errorf("failed to get subscriber: %w", err)
 	}
 
 	return nil
