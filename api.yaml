@@ -11,11 +11,81 @@ servers:
     variables:
       port:
         enum:
-            - "8080"
-            - "6060"
+          - "8080"
+          - "6060"
         default: "8080"
 paths:
-  /subscribe:
+  /newsletter/:
+    post:
+    put:
+    delete:
+  /newsletter/{id}:
+    get:
+      responses:
+        '200':
+          description: information about this newsletter and a list of posts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-error'
+  /newsletter/{id}/post:
+    get:
+      description: get all posts for this newsletter
+      responses:
+        '200':
+          description: list of all posts for this newsletter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-error'
+    post:
+      description: create a new post for this newsletter (authors only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthCheck'
+      responses:
+        '200':
+          description: newsletter post created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '500':
+          $ref: '#/components/responses/internal-error'
+  /newsletter/{id}/post/{post_id}:
+    get:
+      description: get a specific post from this newsletter
+      responses:
+        '200':
+          description: newsletter post response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '500':
+          $ref: '#/components/responses/internal-error'
+  /newsletter/{id}/subscribe:
     post:
       requestBody:
         required: true
@@ -31,18 +101,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionResponse'
         '400':
-          description: bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
+          $ref: '#/components/responses/bad-request'
         '500':
-          description: internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /unsubscribe:
+          $ref: '#/components/responses/internal-error'
+  /newsletter/{:id}/unsubscribe:
     post:
       requestBody:
         required: true
@@ -58,17 +120,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionResponse'
         '400':
-          description: bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
+          $ref: '#/components/responses/bad-request'
         '500':
-          description: internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
+          $ref: '#/components/responses/internal-error'
+  /reader:
+    get:
+    post:
+    put:
+    delete:
+  /author:
+    get:
+    post:
+    put:
+    delete:
   /healthcheck:
     get:
       responses:
@@ -77,11 +141,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health'
+                $ref: '#/components/schemas/HealthCheck'
 components:
+  responses:
+    bad-request:
+      description: 400 BAD REQUEST
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequest'
+    forbidden:
+      description: 403 FORBIDDEN
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Forbidden'
+    not-found:
+      description: 404 NOT FOUND
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFound'
+    internal-error:
+      description: 500 INTERNAL SERVER ERROR
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InternalServerError'
   schemas:
     # base types
-    Health:
+    HealthCheck:
       type: object
       required:
         - status
@@ -90,38 +179,53 @@ components:
           type: string
           example: ok
     SubscriptionRequest:
-        type: object
-        required:
-          - email
-        properties:
-          email:
-            type: string
-            example: user@example.com
-
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          example: user@example.com
     SubscriptionResponse:
-        type: object
-        required:
-          - status
-        properties:
-          status:
-            type: string
-            example: subscribed
-          email:
-            type: string
-            example:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: subscribed
+        email:
+          type: string
+          example:
     BadRequest:
-        type: object
-        required:
-          - message
-        properties:
-          message:
-            type: string
-            example: bad request
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: bad request
+    Forbidden:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: forbidden, newsletter is hidden by author
+    NotFound:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: not found
     InternalServerError:
-        type: object
-        required:
-          - message
-        properties:
-          message:
-            type: string
-            example: internal server error
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: internal server error
