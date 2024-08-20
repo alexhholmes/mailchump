@@ -2,6 +2,18 @@ openapi: "3.0.0"
 info:
   version: 1.0.0
   title: A simple newsletter subscription API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:8080
+    description: Development server
+    variables:
+      port:
+        enum:
+            - "8080"
+            - "6060"
+        default: "8080"
 paths:
   /subscribe:
     post:
