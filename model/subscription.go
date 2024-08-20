@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,19 +17,42 @@ var (
 	ErrRemoveSubscriptionForbidden     = errors.New("cannot remove subscription, forbidden")
 )
 
-// Subscription defines model for Subscription.
+// Subscription defines model for user's Subscription to a newsletter.
+// An email can be used for multiple newsletters, but a newsletter can
+// only have one subscription per email.
 type Subscription struct {
-	ID     uuid.UUID `json:"id"`
-	Email  string    `json:"email"`
-	Active bool      `json:"active"`
-	From   time.Time `json:"from"`
-	Until  time.Time `json:"until"`
+	ID         uuid.UUID `json:"id"`
+	Newsletter uuid.UUID `json:"newsletter"`
+	Email      string    `json:"email"`
+	Active     bool      `json:"active"`
+	From       time.Time `json:"from"`
+	Until      time.Time `json:"until"`
 }
 
+// Validate performs runtime checks on Subscription fields.
 func (s *Subscription) Validate() error {
 	if s.Email == "" {
 		return fmt.Errorf("email is required")
+	} else if _, err := mail.ParseAddress(s.Email); err != nil {
+		return fmt.Errorf("email is invalid")
 	}
+
+	if s.Active {
+		if time.Time.IsZero(s.From) {
+			return fmt.Errorf("from is required")
+		}
+		if time.Time.IsZero(s.Until) {
+			return fmt.Errorf("until is required")
+		}
+	} else {
+		if time.Time.IsZero(s.From) {
+			return fmt.Errorf("from is required")
+		}
+		if !time.Time.IsZero(s.Until) {
+			return fmt.Errorf("until must be zero")
+		}
+	}
+
 	return nil
 }
 
@@ -37,7 +61,7 @@ func (s *Subscription) FromReq(sub gen.SubscriptionRequest) {
 	s.Email = sub.Email
 }
 
-// Create creates the subscriber in postgres `subscribers` table.
+// Create creates the subscriber in database `subscribers` table.
 func (s *Subscription) Create(db *sql.DB) error {
 	_, err := db.Exec("INSERT INTO subscribers (email) VALUES ($1)", s.Email)
 	if err != nil {

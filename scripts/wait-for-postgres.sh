@@ -6,7 +6,7 @@ user="$2"
 dbname="$3"
 shift
 
-until pg_isready -h postgres -p 5432 -U "$user" -d "$dbname"; do
+until pg_isready -h database -p 5432 -U "$user" -d "$dbname"; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done

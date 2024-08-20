@@ -4,13 +4,11 @@ import (
 	"database/sql"
 	"log"
 	"log/slog"
+	"mailchump/api"
+	"mailchump/database"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"time"
-
-	"mailchump/api"
-	"mailchump/postgres"
 )
 
 // init initializes the database tables and adds test data. This is for local testing
@@ -18,7 +16,7 @@ import (
 // database.
 func init() {
 	// Initialize the database tables and add test data
-	db, err := postgres.Init()
+	db, err := database.Init()
 	if err != nil {
 		log.Fatalf("Could not make db connection for dev environment initialization: %s", err.Error())
 	}
@@ -47,16 +45,13 @@ func main() {
 
 	// pprof web server. See: https://golang.org/pkg/net/http/pprof/
 	go func() {
-		time.Sleep(1 * time.Second)
 		pprof := "0.0.0.0:6060"
 		slog.Info("server is listening", "pprof", pprof)
 		log.Fatal(http.ListenAndServe(pprof, nil))
 	}()
 
-	// TODO implement os signal handling
 	err := api.Run()
 	if err != nil {
 		os.Exit(1)
 	}
-	return
 }

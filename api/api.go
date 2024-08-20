@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+	"mailchump/database"
 	"mailchump/gen"
-	"mailchump/postgres"
 )
 
 func Run() error {
@@ -29,7 +29,7 @@ func Run() error {
 	defer func(db *sql.DB) {
 		err = db.Close()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("failed to close DB connection: %s", err.Error())
 		}
 	}(server.db)
 
@@ -59,7 +59,7 @@ type Server struct {
 }
 
 func newServer() (Server, error) {
-	db, err := postgres.Init()
+	db, err := database.Init()
 	if err != nil {
 		return Server{}, fmt.Errorf("failed to open a DB connection: %w", err)
 	}
