@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
-	"mailchump/database"
 	"mailchump/gen"
+	"mailchump/pgdb"
 )
 
 func Run() error {
@@ -23,7 +23,7 @@ func Run() error {
 
 	server, err := newServer()
 	if err != nil {
-		slog.Error("Server fatal startup error", "error", err)
+		slog.Error("server fatal startup error", "error", err)
 		return err
 	}
 	defer func(db *sql.DB) {
@@ -43,28 +43,28 @@ func Run() error {
 		Addr:    "0.0.0.0:8080",
 	}
 
-	slog.Info("Server is listening", "address", s.Addr)
+	slog.Info("server is listening", "address", s.Addr)
 	err = s.ListenAndServe()
 	if err != nil {
 		slog.Error(err.Error(), "error", err)
-		slog.Error("Server fatal runtime error", "error", err)
+		slog.Error("server fatal runtime error", "error", err)
 		return err
 	}
 
 	return nil
 }
 
-type Server struct {
+type server struct {
 	db *sql.DB
 }
 
-func newServer() (Server, error) {
-	db, err := database.Init()
+func newServer() (server, error) {
+	db, err := pgdb.Init()
 	if err != nil {
-		return Server{}, fmt.Errorf("failed to open a DB connection: %w", err)
+		return server{}, fmt.Errorf("failed to open a DB connection: %w", err)
 	}
 
-	return Server{
+	return server{
 		db: db,
 	}, nil
 }

@@ -9,8 +9,8 @@ import (
 
 // GetHealthcheck returns HTTP status 200.
 // GET /ping
-func (s Server) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
-	resp := gen.Health{
+func (s server) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
+	resp := gen.HealthCheck{
 		Status: "OK",
 	}
 

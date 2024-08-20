@@ -61,7 +61,7 @@ func (s *Subscription) FromReq(sub gen.SubscriptionRequest) {
 	s.Email = sub.Email
 }
 
-// Create creates the subscriber in database `subscribers` table.
+// Create creates the subscriber in pgdb `subscribers` table.
 func (s *Subscription) Create(db *sql.DB) error {
 	_, err := db.Exec("INSERT INTO subscribers (email) VALUES ($1)", s.Email)
 	if err != nil {

@@ -2,7 +2,7 @@
 
 A shitty newsletter service
 
-## Project setup
+## Project Setup
 Codegen from OpenAPI spec (needed for IDE indexing support):
 ```
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest

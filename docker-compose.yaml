@@ -11,7 +11,7 @@ services:
       ENVIRONMENT: "DEV"
     depends_on:
       - postgres
-    entrypoint: ["./wait-for-database.sh", "./mailchump", "username", "mailchump"]
+    entrypoint: ["./wait-for-postgres.sh", "./mailchump", "username", "mailchump"]
 
   postgres:
     image: postgres:latest

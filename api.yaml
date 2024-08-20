@@ -4,135 +4,260 @@ info:
   title: A simple newsletter subscription API
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
   - url: http://localhost:8080
-    description: Development server
+    description: Localhost server
     variables:
       port:
         enum:
           - "8080"
-          - "6060"
+          - "6060" # Go pprof (enabled when ENVIRONMENT=DEV)
         default: "8080"
 paths:
-  /newsletter/:
-    post:
-    put:
-    delete:
-  /newsletter/{id}:
+  /newsletters:
     get:
+      description: Get a list of all newsletters
       responses:
         '200':
-          description: information about this newsletter and a list of posts
+          description: List of all newsletters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheck'
+                type: object
+                required:
+                  - count
+                properties:
+                  count:
+                    type: integer
+                    example: 1
+                    default: 0
+                  newsletters:
+                    type: array
+                    default: []
+                    items:
+                      $ref: '#/components/schemas/NewsletterResponse'
+        '500':
+          $ref: '#/components/responses/internal-error'
+    post:
+      description: Create a newsletter (authors only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+              properties:
+                title:
+                  type: string
+                  example: My Newsletter
+                description:
+                  type: string
+                  example: This is my newsletter
+                authors:
+                  type: array
+                  description: List of author UUIDs; default is the authenticated user, which is always included
+                  items:
+                    type: string
+                  example: [550e8400-e29b-41d4-a716-446655440000]
+      responses:
+        '200':
+          description: newsletter created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - newsletter
+                properties:
+                  message:
+                    type: string
+                    example: newsletter created
+                  newsletter:
+                    $ref: '#/components/schemas/NewsletterResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
         '403':
           $ref: '#/components/responses/forbidden'
         '404':
           $ref: '#/components/responses/not-found'
         '500':
           $ref: '#/components/responses/internal-error'
-  /newsletter/{id}/post:
+  /newsletters/{id}:
     get:
-      description: get all posts for this newsletter
+      description: Get information about a newsletter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the newsletter
+          schema:
+            type: string
       responses:
         '200':
-          description: list of all posts for this newsletter
+          description: Information about this newsletter and a list of posts
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheck'
+                $ref: '#/components/schemas/NewsletterResponse'
         '403':
           $ref: '#/components/responses/forbidden'
         '404':
           $ref: '#/components/responses/not-found'
         '500':
           $ref: '#/components/responses/internal-error'
-    post:
-      description: create a new post for this newsletter (authors only)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HealthCheck'
-      responses:
-        '200':
-          description: newsletter post created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthCheck'
-        '500':
-          $ref: '#/components/responses/internal-error'
-  /newsletter/{id}/post/{post_id}:
-    get:
-      description: get a specific post from this newsletter
-      responses:
-        '200':
-          description: newsletter post response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthCheck'
-        '400':
-          $ref: '#/components/responses/bad-request'
-        '404':
-          $ref: '#/components/responses/not-found'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '500':
-          $ref: '#/components/responses/internal-error'
-  /newsletter/{id}/subscribe:
-    post:
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubscriptionRequest'
-      responses:
-        '200':
-          description: subscription response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubscriptionResponse'
-        '400':
-          $ref: '#/components/responses/bad-request'
-        '500':
-          $ref: '#/components/responses/internal-error'
-  /newsletter/{:id}/unsubscribe:
-    post:
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubscriptionRequest'
-      responses:
-        '200':
-          description: unsubscription response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubscriptionResponse'
-        '400':
-          $ref: '#/components/responses/bad-request'
-        '500':
-          $ref: '#/components/responses/internal-error'
-  /reader:
-    get:
-    post:
-    put:
+#    put:
+#      description: Update information about a newsletter (owning author only)
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/UpdateNewsletterRequest'
+#      responses:
+#        '200':
+#          description: updated information about this newsletter and a list of posts
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/UpdateNewsletterResponse'
+#        '403':
+#          $ref: '#/components/responses/forbidden'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
     delete:
-  /author:
-    get:
-    post:
-    put:
-    delete:
+        description: Delete a newsletter (owning author only)
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: The ID of the newsletter
+            schema:
+              type: string
+        responses:
+          '200':
+            description: newsletter deleted with recovery period
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required:
+                    - message
+                    - newsletter
+                  properties:
+                    message:
+                      type: string
+                      example: newsletter deleted
+                    newsletter:
+                      $ref: '#/components/schemas/NewsletterResponse'
+          '403':
+            $ref: '#/components/responses/forbidden'
+          '404':
+            $ref: '#/components/responses/not-found'
+          '500':
+            $ref: '#/components/responses/internal-error'
+#  /newsletters/{id}/posts:
+#    get:
+#      description: Get all posts for this newsletter
+#      responses:
+#        '200':
+#          description: list of all posts for this newsletter
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/HealthCheck'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
+#    post:
+#      description: Create a new post for this newsletter (authors only)
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/HealthCheck'
+#      responses:
+#        '200':
+#          description: newsletter post created
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/HealthCheck'
+#        '400':
+#          $ref: '#/components/responses/bad-request'
+#        '403':
+#          $ref: '#/components/responses/forbidden'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
+#  /newsletters/{id}/posts/{post_id}:
+#    get:
+#      description: Get a specific post from this newsletter
+#      responses:
+#        '200':
+#          description: newsletter post response
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/HealthCheck'
+#        '400':
+#          $ref: '#/components/responses/bad-request'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
+#  /newsletters/{id}/subscription:
+#    post:
+#      description: Subscribe to this newsletter
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/SubscriptionRequest'
+#      responses:
+#        '200':
+#          description: subscription response
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/SubscriptionResponse'
+#        '400':
+#          $ref: '#/components/responses/bad-request'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
+#    delete:
+#      description: Unsubscribe from this newsletter
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/SubscriptionRequest'
+#      responses:
+#        '200':
+#          description: unsubscription response
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/SubscriptionResponse'
+#        '400':
+#          $ref: '#/components/responses/bad-request'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
   /healthcheck:
     get:
       responses:
@@ -169,7 +294,48 @@ components:
           schema:
             $ref: '#/components/schemas/InternalServerError'
   schemas:
-    # base types
+    NewsletterResponse:
+      type: object
+      required:
+        - id
+        - owner
+        - deleted
+      properties:
+        id:
+          type: string
+          example: 123
+        owner:
+          type: string
+          example: 550e8400-e29b-41d4-a716-446655440000
+        authors:
+          type: array
+          items:
+            type: string
+          example: [550e8400-e29b-41d4-a716-446655440000]
+        title:
+          type: string
+          example: My Newsletter
+        slug:
+          type: string
+          example: my-newsletter
+        description:
+          type: string
+          example: This is my newsletter
+        created_at:
+          type: string
+          example: 2021-01-01T00:00:00Z
+        updated_at:
+            type: string
+            example: 2021-01-01T00:00:00Z
+        post_count:
+          type: integer
+          example: 0
+        hidden:
+          type: boolean
+          example: false
+        deleted:
+          type: boolean
+          example: false
     HealthCheck:
       type: object
       required:

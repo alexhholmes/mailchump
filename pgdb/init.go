@@ -1,4 +1,4 @@
-package database
+package pgdb
 
 import (
 	"database/sql"
@@ -8,9 +8,9 @@ import (
 )
 
 func Init() (*sql.DB, error) {
-	// Open a connection to database
-	connStr := "host=database user=username dbname=mailchump sslmode=disable password=password"
-	db, err := sql.Open("database", connStr)
+	// Open a connection to pgdb
+	connStr := "host=postgres user=username dbname=mailchump sslmode=disable password=password"
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open a DB connection: %w", err)
 	}

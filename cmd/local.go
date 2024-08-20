@@ -4,19 +4,20 @@ import (
 	"database/sql"
 	"log"
 	"log/slog"
-	"mailchump/api"
-	"mailchump/database"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+
+	"mailchump/api"
+	"mailchump/pgdb"
 )
 
-// init initializes the database tables and adds test data. This is for local testing
+// init initializes the pgdb tables and adds test data. This is for local testing
 // purposes only. In a production environment, use `main.go` with a proper standalone
-// database.
+// pgdb.
 func init() {
-	// Initialize the database tables and add test data
-	db, err := database.Init()
+	// Initialize the pgdb tables and add test data
+	db, err := pgdb.Init()
 	if err != nil {
 		log.Fatalf("Could not make db connection for dev environment initialization: %s", err.Error())
 	}
@@ -37,7 +38,7 @@ func init() {
 }
 
 func main() {
-	// Lets us initialize the database and add test data without running the server.
+	// Lets us initialize the pgdb and add test data without running the server.
 	// Useful for GoLand's live SQL testing feature.
 	if os.Getenv("INIT_ONLY") != "" {
 		return
