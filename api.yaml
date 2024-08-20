@@ -17,6 +17,7 @@ servers:
 paths:
   /newsletters:
     get:
+      operationId: GetAllNewsletters
       description: Get a list of all newsletters
       responses:
         '200':
@@ -40,6 +41,7 @@ paths:
         '500':
           $ref: '#/components/responses/internal-error'
     post:
+      operationId: CreateNewsletter
       description: Create a newsletter (authors only)
       requestBody:
         required: true
@@ -89,6 +91,7 @@ paths:
           $ref: '#/components/responses/internal-error'
   /newsletters/{id}:
     get:
+      operationId: GetNewsletterById
       description: Get information about a newsletter
       parameters:
         - name: id
@@ -132,6 +135,7 @@ paths:
 #        '500':
 #          $ref: '#/components/responses/internal-error'
     delete:
+        operationId: DeleteNewsletterById
         description: Delete a newsletter (owning author only)
         parameters:
           - name: id

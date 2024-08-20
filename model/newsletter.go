@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"log/slog"
 	"mailchump/pgdb"
 	"time"
 
@@ -17,8 +18,43 @@ var (
 	ErrNoChanges               = errors.New("no changes made")
 )
 
+type Newsletters []Newsletter
+
+// GetAllNewsletters fetches the entire newsletters table from the database.
+func (n *Newsletters) GetAllNewsletters(ctx context.Context, db *sql.DB) error {
+	// TODO show hidden newsletters to the owner
+	// Fetch entire newsletters table
+	rows, err := db.QueryContext(ctx,
+		`SELECT id, owner, title, slug, description, created, updated, post_count, hidden, deleted, recovery_window
+		FROM newsletters
+		WHERE deleted = false`,
+	)
+	if err != nil {
+		return err
+	}
+	defer pgdb.HandleCloseResult(rows)
+
+	// Scan the rows into a slice of Newsletters
+	for rows.Next() {
+		var o Newsletter
+		if err = rows.Scan(&o.Id, &o.OwnerID, &o.Title, &o.Slug, &o.Description, &o.Created, &o.Updated, &o.PostCount, &o.Hidden, &o.Deleted, &o.RecoveryWindow); err != nil {
+			slog.Warn("failed to scan newsletter; schema issue", "error", err)
+			return err
+		}
+		*n = append(*n, o)
+	}
+
+	// Check for errors during rows.Next
+	if err = rows.Close(); err != nil {
+		slog.Warn("failed to close rows", "error", err)
+		return err
+	}
+
+	return nil
+}
+
 type Newsletter struct {
-	ID             uuid.UUID   `json:"id"`
+	Id             uuid.UUID   `json:"id"`
 	OwnerID        uuid.UUID   `json:"owner_id"`
 	AuthorIDs      []uuid.UUID `json:"author_ids"`
 	Title          string      `json:"title"`
@@ -41,7 +77,7 @@ func (n *Newsletter) Validate() error {
 func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 	now := time.Now()
 
-	n.ID = uuid.New()
+	n.Id = uuid.New()
 	n.Created = now
 	n.Updated = now
 
@@ -57,7 +93,7 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 		`INSERT INTO newsletters (id, owner, title, slug, description, created, updated, post_count, hidden)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		ON CONFLICT (id) DO NOTHING`,
-		n.ID, n.OwnerID, n.Title, n.Slug, n.Description, n.Created, n.Updated, n.PostCount, n.Hidden,
+		n.Id, n.OwnerID, n.Title, n.Slug, n.Description, n.Created, n.Updated, n.PostCount, n.Hidden,
 	)
 	if err != nil {
 		return err
@@ -75,7 +111,7 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 	if _, err = tx.ExecContext(ctx,
 		`INSERT INTO newsletter_authors (newsletter, author)
 		VALUES ($1, $2)`,
-		n.ID, n.OwnerID,
+		n.Id, n.OwnerID,
 	); err != nil {
 		return err
 	}
@@ -91,7 +127,7 @@ func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
 	// TODO make sure cascade delete works
 	res, err := db.ExecContext(ctx,
 		`UPDATE newsletters SET deleted = true WHERE id = $1`,
-		n.ID,
+		n.Id,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -115,7 +151,7 @@ func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
 func (n *Newsletter) Hide(ctx context.Context, db *sql.DB) error {
 	if _, err := db.ExecContext(ctx,
 		`UPDATE newsletters SET hidden = true WHERE id = $1`,
-		n.ID,
+		n.Id,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNewsletterNotFound

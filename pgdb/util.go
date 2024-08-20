@@ -20,3 +20,13 @@ func HandleTxError(err error, tx *sql.Tx) func() {
 		}
 	}
 }
+
+// HandleCloseResult is a helper function for the `defer` to handle closing
+// sql.Rows; log and ignore any error that occurs.
+func HandleCloseResult(res *sql.Rows) func() {
+	return func() {
+		if err := res.Close(); err != nil {
+			slog.Warn("failed to close rows", "error", err)
+		}
+	}
+}
