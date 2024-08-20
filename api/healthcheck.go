@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"mailchump/gen"
 	"net/http"
+
+	"mailchump/gen"
 )
 
 // GetHealthcheck returns HTTP status 200.

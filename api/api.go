@@ -21,9 +21,9 @@ func Run() error {
 	}
 	slog.SetDefault(logger)
 
-	server, err := NewServer()
+	server, err := newServer()
 	if err != nil {
-		slog.Error("server fatal startup error", "error", err)
+		slog.Error("Server fatal startup error", "error", err)
 		return err
 	}
 	defer func(db *sql.DB) {
@@ -47,7 +47,7 @@ func Run() error {
 	err = s.ListenAndServe()
 	if err != nil {
 		slog.Error(err.Error(), "error", err)
-		slog.Error("server fatal runtime error", "error", err)
+		slog.Error("Server fatal runtime error", "error", err)
 		return err
 	}
 
@@ -58,7 +58,7 @@ type Server struct {
 	db *sql.DB
 }
 
-func NewServer() (Server, error) {
+func newServer() (Server, error) {
 	db, err := postgres.Init()
 	if err != nil {
 		return Server{}, fmt.Errorf("failed to open a DB connection: %w", err)

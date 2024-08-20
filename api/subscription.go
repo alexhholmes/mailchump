@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"net/http"
+
 	"mailchump/gen"
 	"mailchump/model"
-	"net/http"
 )
 
 // PostSubscribe returns HTTP status 200.

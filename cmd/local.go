@@ -49,7 +49,7 @@ func main() {
 	go func() {
 		time.Sleep(1 * time.Second)
 		pprof := "0.0.0.0:6060"
-		slog.Info("Server is listening", "pprof", pprof)
+		slog.Info("server is listening", "pprof", pprof)
 		log.Fatal(http.ListenAndServe(pprof, nil))
 	}()
 
