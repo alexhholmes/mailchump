@@ -6,6 +6,8 @@ to Google GCP using Github actions.
 
 _Why use big import when small import work good?_
 
+[Just Use Postgres](https://mccue.dev/pages/8-16-24-just-use-postgres)
+
 A list of packages used (from `go.mod`):
 ```text
 github.com/cucumber/godog
