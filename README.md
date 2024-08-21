@@ -1,6 +1,18 @@
 # Mailchump
 
-A shitty newsletter service
+A shitty newsletter service using vanilla golang with minimal dependencies
+and PostgreSQL for storage. Additionally, packaged with docker and testing/deployment
+to Google GCP using Github actions.
+
+_Why use big import when small import work good?_
+
+A list of packages used (from `go.mod`):
+```text
+github.com/cucumber/godog
+github.com/lib/pq
+github.com/google/uuid
+github.com/oapi-codegen/runtime
+```
 
 ## Project Setup
 Codegen from OpenAPI spec (needed for IDE indexing support):
