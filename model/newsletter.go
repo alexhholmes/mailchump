@@ -6,10 +6,11 @@ import (
 	"errors"
 	"log"
 	"log/slog"
-	"mailchump/pgdb"
 	"time"
 
 	"github.com/google/uuid"
+	"mailchump/gen"
+	"mailchump/pgdb"
 )
 
 var (
@@ -53,6 +54,14 @@ func (n *Newsletters) GetAllNewsletters(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
+func (n *Newsletters) ToResponse() []gen.NewsletterResponse {
+	var resp []gen.NewsletterResponse
+	for _, newsletter := range *n {
+		resp = append(resp, newsletter.ToResponse())
+	}
+	return resp
+}
+
 type Newsletter struct {
 	Id             uuid.UUID   `json:"id"`
 	OwnerID        uuid.UUID   `json:"owner_id"`
@@ -72,6 +81,30 @@ type Newsletter struct {
 func (n *Newsletter) Validate() error {
 	// TODO
 	return nil
+}
+
+func (n *Newsletter) ToResponse() gen.NewsletterResponse {
+	createdAt := n.Created.String()
+	updatedAt := n.Updated.String()
+	return gen.NewsletterResponse{
+		Authors: func() *[]string {
+			var authors []string
+			for _, a := range n.AuthorIDs {
+				authors = append(authors, a.String())
+			}
+			return &authors
+		}(),
+		CreatedAt:   &createdAt,
+		Deleted:     false,
+		Description: nil,
+		Hidden:      nil,
+		Id:          n.Id.String(),
+		Owner:       n.OwnerID.String(),
+		PostCount:   &n.PostCount,
+		Slug:        &n.Slug,
+		Title:       &n.Title,
+		UpdatedAt:   &updatedAt,
+	}
 }
 
 func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {

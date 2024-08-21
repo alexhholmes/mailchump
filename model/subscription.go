@@ -1,4 +1,5 @@
-//package model
+package model
+
 //
 //import (
 //	"database/sql"
