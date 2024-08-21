@@ -8,7 +8,8 @@ services:
     networks:
       - db-net
     environment:
-      ENVIRONMENT: "DEV"
+      ENVIRONMENT: "dev"
+      INIT_DB: "true"
     depends_on:
       - postgres
     entrypoint: ["./wait-for-postgres.sh", "./mailchump", "username", "mailchump"]
