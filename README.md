@@ -16,6 +16,8 @@ github.com/google/uuid
 github.com/oapi-codegen/runtime
 ```
 
+This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
+
 ## Project Setup
 Codegen from OpenAPI spec (needed for IDE indexing support):
 ```
