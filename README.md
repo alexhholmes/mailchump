@@ -10,10 +10,10 @@ _Why use big import when small import work good?_
 
 A list of packages used (from `go.mod`):
 ```text
-github.com/cucumber/godog
-github.com/lib/pq
-github.com/google/uuid
-github.com/oapi-codegen/runtime
+github.com/cucumber/godog # Integration testing
+github.com/lib/pq # PostgresDB driver for database/sql
+github.com/google/uuid # IDs for database primary keys
+github.com/oapi-codegen/runtime # Open API 3 http server codegen
 ```
 
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
@@ -29,12 +29,13 @@ go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 .
 ├── api # API route handlers and application entrypoint
 ├── cmd
-│   └── main.go # Main entrypoint
-│   └── local.go # Local entrypoint with database initialization and migration
+│   └── main.go # Production entrypoint
+│   └── local.go # Development entrypoint with ephemeral database initialization and migration
 ├── gen # Generated code and codegen configuration files
 ├── model # Database models
-├── postgres # Database connection initialization
+├── pgdb # Database connection initialization and utility functions
 ├── scripts # Development environment scripts
 ```
 
 ## References
+[github.com/alexhholmes/mailchump](https://github.com/alexhholmes/mailchump/blob/main/README.md)
