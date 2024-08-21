@@ -1,12 +1,12 @@
 # Mailchump
 
 A shitty newsletter service using vanilla golang with minimal dependencies
-and PostgreSQL for storage. Additionally, it is packaged with docker and tested/deployed
-to Google GCP using Github actions.
+and PostgreSQL for storage and redis for caching. Additionally, it is packaged
+with docker and tested/deployed to Google GCP using Github actions.
 
 _Why use big import when small import work good?_
 
-[Just Use Postgres](https://mccue.dev/pages/8-16-24-just-use-postgres)
+[Just use Postgres](https://mccue.dev/pages/8-16-24-just-use-postgres)
 
 A list of packages used (from `go.mod`):
 ```text
@@ -14,6 +14,7 @@ github.com/cucumber/godog # Integration testing
 github.com/lib/pq # PostgresDB driver for database/sql
 github.com/google/uuid # IDs for database primary keys
 github.com/oapi-codegen/runtime # Open API 3 http server codegen
+github.com/redis/go-redis # Caching
 ```
 
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
