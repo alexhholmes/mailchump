@@ -35,6 +35,7 @@ go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 ├── model # Database models
 ├── pgdb # Database connection initialization and utility functions
 ├── scripts # Development environment scripts
+├── Makefile # Everything you need to test/build/deploy this project
 ```
 
 ## References
