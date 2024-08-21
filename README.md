@@ -1,7 +1,7 @@
 # Mailchump
 
 A shitty newsletter service using vanilla golang with minimal dependencies
-and PostgreSQL for storage. Additionally, it is packaged with docker and testing/deployment
+and PostgreSQL for storage. Additionally, it is packaged with docker and tested/deployed
 to Google GCP using Github actions.
 
 _Why use big import when small import work good?_
