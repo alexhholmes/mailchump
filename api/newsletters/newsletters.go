@@ -3,9 +3,10 @@ package newsletters
 import (
 	"database/sql"
 	"encoding/json"
+	"net/http"
+
 	"mailchump/gen"
 	"mailchump/model"
-	"net/http"
 )
 
 type NewsletterHandler struct {

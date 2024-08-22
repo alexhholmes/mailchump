@@ -27,6 +27,14 @@ var (
 
 type Newsletters []Newsletter
 
+func (n *Newsletters) ToResponse() *[]gen.NewsletterResponse {
+	var resp []gen.NewsletterResponse
+	for _, newsletter := range *n {
+		resp = append(resp, newsletter.ToResponse())
+	}
+	return &resp
+}
+
 // GetAll fetches the entire newsletters table from the database.
 func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 	// Fetch entire newsletters table
@@ -76,14 +84,6 @@ func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 	}
 
 	return nil
-}
-
-func (n *Newsletters) ToResponse() *[]gen.NewsletterResponse {
-	var resp []gen.NewsletterResponse
-	for _, newsletter := range *n {
-		resp = append(resp, newsletter.ToResponse())
-	}
-	return &resp
 }
 
 type Newsletter struct {
