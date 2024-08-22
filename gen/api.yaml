@@ -304,14 +304,20 @@ components:
       type: object
       required:
         - id
-        - owner
-        - deleted
+        - authors
+        - title
+        - slug
+        - description
+        - created_at
+        - updated_at
+        - post_count
       properties:
         id:
           type: string
           example: 123
         owner:
           type: string
+          nullable: true
           example: 550e8400-e29b-41d4-a716-446655440000
         authors:
           type: array
@@ -338,9 +344,11 @@ components:
           example: 0
         hidden:
           type: boolean
+          nullable: true
           example: false
         deleted:
           type: boolean
+          nullable: true
           example: false
     HealthCheck:
       type: object
