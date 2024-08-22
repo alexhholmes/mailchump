@@ -24,21 +24,16 @@ func Run() error {
 	}
 	slog.SetDefault(logger)
 
-	server, err := newServer()
+	server, closer, err := NewHandler()
 	if err != nil {
 		slog.Error("server fatal startup error", "error", err)
 		return err
 	}
-	defer func(db *sql.DB) {
-		err = db.Close()
-		if err != nil {
-			log.Fatalf("failed to close DB connection: %s", err.Error())
-		}
-	}(server.db)
+	defer closer()
 
 	// Get an `http.Handler` that we can use
 	r := http.NewServeMux()
-	h := gen.HandlerFromMux(server, r)
+	h := gen.HandlerFromMux(&server, r)
 	s := &http.Server{
 		Handler: h,
 		Addr:    "0.0.0.0:8080",
@@ -54,17 +49,24 @@ func Run() error {
 	return nil
 }
 
-type handler struct {
+type Handler struct {
 	db *sql.DB
 	newsletters.NewsletterHandler
 	healthcheck.HealthCheckHandler
 }
 
-func newServer() (handler, error) {
+func NewHandler() (Handler, func(), error) {
 	db, err := pgdb.Init()
 	if err != nil {
-		return handler{}, fmt.Errorf("failed to open a DB connection: %w", err)
+		return Handler{}, nil, fmt.Errorf("failed to open a DB connection: %w", err)
 	}
 
-	return handler{db: db}, nil
+	return Handler{db: db}, func() {
+		if db != nil {
+			err = db.Close()
+			if err != nil {
+				log.Fatalf("failed to close DB connection: %s", err.Error())
+			}
+		}
+	}, nil
 }

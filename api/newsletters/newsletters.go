@@ -13,7 +13,7 @@ type NewsletterHandler struct {
 	db *sql.DB
 }
 
-func (h NewsletterHandler) GetAllNewsletters(w http.ResponseWriter, r *http.Request) {
+func (h *NewsletterHandler) GetAllNewsletters(w http.ResponseWriter, r *http.Request) {
 	newsletters := model.Newsletters{}
 	err := newsletters.GetAllNewsletters(r.Context(), h.db)
 	if err != nil {
@@ -35,22 +35,22 @@ func (h NewsletterHandler) GetAllNewsletters(w http.ResponseWriter, r *http.Requ
 	panic("implement me")
 }
 
-func (h NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
+func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (h NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
+func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (h NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
+func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (h NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
+func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
 	//TODO implement me
 	panic("implement me")
 }
