@@ -24,9 +24,9 @@ stop:
 clean:
 	rm -rf bin
 
-gen: api.yaml
+gen: gen/api.yaml
 	mkdir -p gen
-	oapi-codegen --config=gen/config.yaml api.yaml
+	oapi-codegen --config=gen/config.yaml gen/api.yaml
 
 # Testing targets
 test: gen
