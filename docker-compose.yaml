@@ -12,6 +12,7 @@ services:
       INIT_DB: "true"
     depends_on:
       - postgres
+      - redis
     entrypoint: ["./wait-for-postgres.sh", "./mailchump", "username", "mailchump"]
 
   postgres:
@@ -25,6 +26,15 @@ services:
       POSTGRES_PASSWORD: "password"
       POSTGRES_USER: "username"
       POSTGRES_DB: "mailchump"
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379" # Expose the port so we can connect to it from Datagrip
+    networks:
+        - db-net
+    command: redis-server --requirepass password --loglevel verbose
 
 networks:
   db-net:
