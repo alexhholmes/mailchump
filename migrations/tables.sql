@@ -42,7 +42,7 @@ create table posts
     owner_id        uuid                                   not null,
     title           varchar(300)                           not null,
     slug            varchar(300)                           not null,
-    description      varchar(900)                           not null,
+    description     varchar(900)                           not null,
     content         text                                   not null,
     created         timestamp with time zone default now() not null,
     updated         timestamp with time zone default now() not null,

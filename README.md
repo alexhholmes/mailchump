@@ -1,6 +1,6 @@
 # Mailchump
 
-A shitty newsletter service using vanilla golang with minimal dependencies;
+A shitty newsletter service made with vanilla golang with minimal dependencies;
 using PostgreSQL for storage and redis for caching. Additionally, it is packaged
 with docker and tested/deployed to Google GCP using Github actions.
 
