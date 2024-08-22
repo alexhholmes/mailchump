@@ -17,7 +17,7 @@ servers:
 paths:
   /newsletters:
     get:
-      operationId: GetAllNewsletters
+      operationId: GetNewsletters
       description: Get a list of all newsletters
       responses:
         '200':

@@ -26,16 +26,32 @@ func init() {
 			_ = db.Close()
 		}(db)
 
-		query := `
-CREATE TABLE IF NOT EXISTS subscriptions (
-id UUID PRIMARY KEY,
-email VARCHAR(255) NOT NULL UNIQUE,
-"from" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-until TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);`
-		_, err = db.Exec(query)
+		// Read the tables.sql file
+		query, err := os.ReadFile("tables.sql")
 		if err != nil {
-			log.Fatalf("Could not execute DB initialization query: %s", err.Error())
+			log.Fatalf("Could not read migration file: %s", err.Error())
+		}
+
+		// Transaction to migrate entire tables.sql file the fresh database
+		tx, err := db.Begin()
+		if err != nil {
+			log.Fatalf("Could not start migration transaction: %s", err.Error())
+		}
+
+		// Execute the tables.sql file statements to create the empty tables
+		_, err = tx.Exec(string(query))
+		if err != nil {
+			roll := tx.Rollback()
+			if roll != nil {
+				log.Fatalf("Could not rollback migration transaction: %s", err.Error())
+			}
+			log.Fatalf("Could not execute migration statement: %s", err.Error())
+		}
+
+		// Commit the transaction
+		err = tx.Commit()
+		if err != nil {
+			log.Fatalf("Could not commit migration transaction: %s", err.Error())
 		}
 	}
 }

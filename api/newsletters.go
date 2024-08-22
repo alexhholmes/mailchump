@@ -30,6 +30,11 @@ func (s server) GetAllNewsletters(w http.ResponseWriter, r *http.Request) {
 	panic("implement me")
 }
 
+func (s server) GetNewsletters(w http.ResponseWriter, r *http.Request) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (s server) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 	//TODO implement me
 	panic("implement me")

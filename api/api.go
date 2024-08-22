@@ -16,7 +16,8 @@ import (
 
 func Run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	if strings.ToLower(os.Getenv("ENVIRONMENT")) == "dev" {
+	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
+	if env == "local" || env == "dev" {
 		logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	}
 	slog.SetDefault(logger)

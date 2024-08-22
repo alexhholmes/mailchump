@@ -12,7 +12,7 @@ package-dev:
 	docker build --target dev --tag mailchump:dev .
 
 run: package-dev stop
-	docker compose up --force-recreate
+	INIT_DB=true docker compose up --force-recreate
 
 run-db: package-dev stop
 	INIT_ONLY=true docker compose up -d --force-recreate

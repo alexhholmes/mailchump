@@ -7,6 +7,7 @@ RUN make build-docker
 FROM ubuntu AS dev
 RUN apt-get update && apt-get install -y postgresql-client
 WORKDIR /app
+COPY --from=builder /app/migrations/tables.sql tables.sql
 COPY --from=builder /app/scripts/wait-for-postgres.sh wait-for-postgres.sh
 COPY --from=builder /app/bin/mailchump mailchump
 EXPOSE 8080 6060
