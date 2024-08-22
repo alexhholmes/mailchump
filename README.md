@@ -30,8 +30,7 @@ go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 .
 ├── api          # API route handlers and application entrypoint
 ├── cmd
-│   └── main.go  # Production entrypoint
-│   └── local.go # Development entrypoint with ephemeral database initialization and migration
+│   └── main.go  # Entrypoint
 ├── gen          # Generated code and codegen configuration files
 ├── model        # Database models
 ├── pgdb         # Database connection initialization and utility functions

@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"mailchump/api/gen"
 	"net/http"
+
+	"mailchump/api/gen"
 )
 
 // TODO authentication middleware for the api with jwt token from cookie added to context
