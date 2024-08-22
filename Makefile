@@ -2,6 +2,9 @@
 build: gen
 	go build -mod=mod -o bin/mailchump cmd/main.go
 
+build-docker: gen  # For use in Dockerfile
+	CGO_ENABLED=0 GOOS=linux go build -mod=mod -o bin/mailchump cmd/main.go
+
 package:
 	docker build --target prod --tag mailchump:latest .
 
@@ -24,9 +27,6 @@ clean:
 gen: api.yaml
 	mkdir -p gen
 	oapi-codegen --config=gen/config.yaml api.yaml
-
-build-docker: gen  # For use in Dockerfile
-	CGO_ENABLED=0 GOOS=linux go build -mod=mod -o bin/mailchump cmd/main.go
 
 # Testing targets
 test: gen
