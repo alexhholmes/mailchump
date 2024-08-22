@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"log"
 	"log/slog"
-	"mailchump/pgdb"
 	"net/http"
 	"os"
 	"strings"
 
 	"mailchump/api"
+	"mailchump/pgdb"
 )
 
 // init initializes the pgdb tables and adds test data. This is for local testing purposes

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"mailchump/api/healthcheck"
-	"mailchump/api/newsletters"
 	"net/http"
 	"os"
 	"strings"
 
 	_ "github.com/lib/pq"
+	"mailchump/api/healthcheck"
+	"mailchump/api/newsletters"
 	"mailchump/gen"
 	"mailchump/pgdb"
 )
@@ -36,11 +36,9 @@ func Run() error {
 		}
 	}(server.db)
 
-	r := http.NewServeMux()
-
 	// Get an `http.Handler` that we can use
+	r := http.NewServeMux()
 	h := gen.HandlerFromMux(server, r)
-
 	s := &http.Server{
 		Handler: h,
 		Addr:    "0.0.0.0:8080",
@@ -49,7 +47,6 @@ func Run() error {
 	slog.Info("server is listening", "address", s.Addr)
 	err = s.ListenAndServe()
 	if err != nil {
-		slog.Error(err.Error(), "error", err)
 		slog.Error("server fatal runtime error", "error", err)
 		return err
 	}
@@ -57,19 +54,17 @@ func Run() error {
 	return nil
 }
 
-type server struct {
+type handler struct {
 	db *sql.DB
 	newsletters.NewsletterHandler
 	healthcheck.HealthCheckHandler
 }
 
-func newServer() (server, error) {
+func newServer() (handler, error) {
 	db, err := pgdb.Init()
 	if err != nil {
-		return server{}, fmt.Errorf("failed to open a DB connection: %w", err)
+		return handler{}, fmt.Errorf("failed to open a DB connection: %w", err)
 	}
 
-	return server{
-		db: db,
-	}, nil
+	return handler{db: db}, nil
 }
