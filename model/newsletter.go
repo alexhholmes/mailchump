@@ -3,26 +3,16 @@ package model
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"log"
 	"log/slog"
+	"mailchump/api/util"
 	"reflect"
 	"time"
 
 	"github.com/google/uuid"
 	"mailchump/api/gen"
+	"mailchump/api/newsletters"
 	"mailchump/pgdb"
-)
-
-func init() {
-	// Generates SQL queries using reflection only once at startup. This avoids having
-	// to manually write out
-}
-
-var (
-	ErrNewsletterAlreadyExists = errors.New("newsletter already exists")
-	ErrNewsletterNotFound      = errors.New("newsletter not found")
-	ErrNoChanges               = errors.New("no changes made")
 )
 
 type Newsletters []Newsletter
@@ -30,10 +20,10 @@ type Newsletters []Newsletter
 // ToResponse converts a slice of Newsletters to a slice of NewsletterResponse. The user
 // parameter is used to determine if all fields should be shown (i.e. the user owns the
 // newsletter).
-func (n *Newsletters) ToResponse(user string) *[]gen.NewsletterResponse {
+func (n *Newsletters) ToResponse(user util.Key) *[]gen.NewsletterResponse {
 	var resp []gen.NewsletterResponse
 	for _, newsletter := range *n {
-		resp = append(resp, newsletter.ToResponse(user == newsletter.OwnerID.String()))
+		resp = append(resp, newsletter.ToResponse(user))
 	}
 	return &resp
 }
@@ -110,13 +100,14 @@ func (n *Newsletter) Validate() error {
 	return nil
 }
 
-func (n *Newsletter) ToResponse(show bool) gen.NewsletterResponse {
+func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
+	// Hide fields if the user is not an owner
 	var (
 		owner   *string
 		hidden  *bool
 		deleted *bool
 	)
-	if show {
+	if user.String() == n.OwnerID.String() {
 		s := n.OwnerID.String()
 		owner = &s
 		hidden = &n.Hidden
@@ -174,7 +165,7 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 		// DB driver does not support RowsAffected
 		log.Fatal(err)
 	} else if affected == 0 {
-		return ErrNewsletterAlreadyExists
+		return newsletters.ErrNewsletterAlreadyExists
 	}
 
 	// Add the owner as an author of the newsletter

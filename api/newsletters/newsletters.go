@@ -3,6 +3,7 @@ package newsletters
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"mailchump/api/gen"
@@ -25,7 +26,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 	user := r.Context().Value("user").(util.Key)
 	response := gen.AllNewsletterResponse{
 		Count:       len(newsletters),
-		Newsletters: newsletters.ToResponse(user.String()),
+		Newsletters: newsletters.ToResponse(user),
 	}
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(response)
@@ -39,15 +40,18 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = newsletter.Create(r.Context(), h.db)
-	if err != nil {
+	if err = newsletter.Create(r.Context(), h.db); err != nil {
+		if errors.Is(err, ErrNewsletterAlreadyExists) {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	user := r.Context().Value("user").(util.Key)
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(newsletter.ToResponse(user.String() == newsletter.OwnerID.String()))
+	_ = json.NewEncoder(w).Encode(newsletter.ToResponse(user))
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
