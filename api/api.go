@@ -39,7 +39,10 @@ func Run() error {
 
 	// Get an `http.Handler` that we can use
 	r := http.NewServeMux()
-	h := gen.HandlerFromMux(&server, r)
+	h := gen.HandlerWithOptions(&server, gen.StdHTTPServerOptions{
+		BaseRouter:  r,
+		Middlewares: []gen.MiddlewareFunc{},
+	})
 	s := &http.Server{
 		Handler: h,
 		Addr:    "0.0.0.0:8080",
