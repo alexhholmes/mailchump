@@ -25,19 +25,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - count
-                properties:
-                  count:
-                    type: integer
-                    example: 1
-                    default: 0
-                  newsletters:
-                    type: array
-                    default: []
-                    items:
-                      $ref: '#/components/schemas/NewsletterResponse'
+                $ref: '#/components/schemas/AllNewsletterResponse'
         '500':
           $ref: '#/components/responses/internal-error'
     post:
@@ -298,6 +286,20 @@ components:
           schema:
             $ref: '#/components/schemas/InternalServerError'
   schemas:
+    AllNewsletterResponse:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+          example: 1
+          default: 0
+        newsletters:
+          type: array
+          default: []
+          items:
+            $ref: '#/components/schemas/NewsletterResponse'
     NewsletterResponse:
       type: object
       required:

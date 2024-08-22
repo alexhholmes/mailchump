@@ -60,7 +60,7 @@ type Handler struct {
 }
 
 // NewHandler creates a new Handler instance, initializing the database connection.
-func NewHandler() (Handler, func(), error) {
+func NewHandler() (h Handler, close func(), err error) {
 	db, err := pgdb.Init()
 	if err != nil {
 		return Handler{}, nil, fmt.Errorf("failed to open a DB connection: %w", err)

@@ -3,46 +3,47 @@ package newsletters
 import (
 	"database/sql"
 	"encoding/json"
-	"net/http"
-
 	"mailchump/gen"
 	"mailchump/model"
+	"net/http"
 )
 
 type NewsletterHandler struct {
 	db *sql.DB
 }
 
-func (h *NewsletterHandler) GetAllNewsletters(w http.ResponseWriter, r *http.Request) {
+func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
 	newsletters := model.Newsletters{}
-	err := newsletters.GetAllNewsletters(r.Context(), h.db)
+	err := newsletters.GetAll(r.Context(), h.db)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(w).Encode(gen.InternalServerError{Message: "failed to retrieve newsletters"})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := struct {
-		Count       int                      `json:"count"`
-		Newsletters []gen.NewsletterResponse `json:"newsletters"`
-	}{
+	response := gen.AllNewsletterResponse{
 		Count:       len(newsletters),
-		Newsletters: nil,
+		Newsletters: newsletters.ToResponse(),
 	}
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
-	//TODO implement me
-	panic("implement me")
-}
-
-func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	var newsletter model.Newsletter
+	err := json.NewDecoder(r.Body).Decode(&newsletter)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = newsletter.Create(r.Context(), h.db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(newsletter.ToResponse())
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
