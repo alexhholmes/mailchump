@@ -18,3 +18,8 @@ type Post struct {
 	Deleted        bool      `json:"deleted"`
 	RecoveryWindow time.Time `json:"recovery_window"`
 }
+
+func (p *Post) Validate() error {
+	// TODO implement
+	return nil
+}
