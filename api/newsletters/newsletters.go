@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"mailchump/api/gen"
@@ -19,7 +20,8 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 	newsletters := model.Newsletters{}
 	err := newsletters.GetAll(r.Context(), h.db)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Warn("Failed to get newsletters", "error", err)
+		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -36,16 +38,19 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	var newsletter model.Newsletter
 	err := json.NewDecoder(r.Body).Decode(&newsletter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		slog.Warn("Failed to decode request body", "error", err)
+		http.Error(w, util.ErrMalformedRequest.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err = newsletter.Create(r.Context(), h.db); err != nil {
 		if errors.Is(err, ErrNewsletterAlreadyExists) {
+			slog.Info("Create newsletter; newsletter already exists", "error", err)
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		slog.Warn("Failed to create newsletter", "error", err)
+		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
 		return
 	}
 

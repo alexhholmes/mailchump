@@ -13,7 +13,7 @@ type HealthCheckHandler struct{}
 // GET /ping
 func (h *HealthCheckHandler) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
 	resp := gen.HealthCheck{
-		Status: "OK",
+		Status: "ok",
 	}
 
 	w.WriteHeader(http.StatusOK)
