@@ -16,6 +16,8 @@ import (
 	"mailchump/pgdb"
 )
 
+// Run starts the server, initializing the logger and a handler instance that will be
+// used by the code-generated router.
 func Run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
@@ -26,7 +28,7 @@ func Run() error {
 
 	server, closer, err := NewHandler()
 	if err != nil {
-		slog.Error("server fatal startup error", "error", err)
+		slog.Error("Server fatal startup error", "error", err)
 		return err
 	}
 	defer closer()
@@ -39,22 +41,25 @@ func Run() error {
 		Addr:    "0.0.0.0:8080",
 	}
 
-	slog.Info("server is listening", "address", s.Addr)
 	err = s.ListenAndServe()
 	if err != nil {
-		slog.Error("server fatal runtime error", "error", err)
+		slog.Error("Server fatal runtime error", "error", err)
 		return err
 	}
+	slog.Info("Server is listening", "address", s.Addr)
 
 	return nil
 }
 
+// Handler is a composition of the endpoint handlers. This allows the individuals handlers
+// to share the same resources, such as the database connection.
 type Handler struct {
 	db *sql.DB
 	newsletters.NewsletterHandler
 	healthcheck.HealthCheckHandler
 }
 
+// NewHandler creates a new Handler instance, initializing the database connection.
 func NewHandler() (Handler, func(), error) {
 	db, err := pgdb.Init()
 	if err != nil {
