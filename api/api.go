@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"mailchump/api/healthcheck"
+	"mailchump/api/newsletters"
 	"net/http"
 	"os"
 	"strings"
@@ -57,6 +59,8 @@ func Run() error {
 
 type server struct {
 	db *sql.DB
+	newsletters.NewsletterHandler
+	healthcheck.HealthCheckHandler
 }
 
 func newServer() (server, error) {
