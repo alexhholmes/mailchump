@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"mailchump/gen"
+	"mailchump/api/gen"
 	"mailchump/pgdb"
 )
 
@@ -27,10 +27,13 @@ var (
 
 type Newsletters []Newsletter
 
-func (n *Newsletters) ToResponse() *[]gen.NewsletterResponse {
+// ToResponse converts a slice of Newsletters to a slice of NewsletterResponse. The user
+// parameter is used to determine if all fields should be shown (i.e. the user owns the
+// newsletter).
+func (n *Newsletters) ToResponse(user string) *[]gen.NewsletterResponse {
 	var resp []gen.NewsletterResponse
 	for _, newsletter := range *n {
-		resp = append(resp, newsletter.ToResponse())
+		resp = append(resp, newsletter.ToResponse(user == newsletter.OwnerID.String()))
 	}
 	return &resp
 }
@@ -107,27 +110,37 @@ func (n *Newsletter) Validate() error {
 	return nil
 }
 
-func (n *Newsletter) ToResponse() gen.NewsletterResponse {
-	createdAt := n.Created.String()
-	updatedAt := n.Updated.String()
+func (n *Newsletter) ToResponse(show bool) gen.NewsletterResponse {
+	var (
+		owner   *string
+		hidden  *bool
+		deleted *bool
+	)
+	if show {
+		s := n.OwnerID.String()
+		owner = &s
+		hidden = &n.Hidden
+		deleted = &n.Deleted
+	}
+
 	return gen.NewsletterResponse{
-		Authors: func() *[]string {
+		Authors: func() []string {
 			var authors []string
 			for _, a := range n.AuthorIDs {
 				authors = append(authors, a.String())
 			}
-			return &authors
+			return authors
 		}(),
-		CreatedAt:   &createdAt,
-		Deleted:     false,
-		Description: nil,
-		Hidden:      nil,
+		CreatedAt:   n.Created.String(),
+		Deleted:     deleted,
+		Description: n.Description,
+		Hidden:      hidden,
 		Id:          n.Id.String(),
-		Owner:       n.OwnerID.String(),
-		PostCount:   &n.PostCount,
-		Slug:        &n.Slug,
-		Title:       &n.Title,
-		UpdatedAt:   &updatedAt,
+		Owner:       owner,
+		PostCount:   n.PostCount,
+		Slug:        n.Slug,
+		Title:       n.Title,
+		UpdatedAt:   n.Updated.String(),
 	}
 }
 

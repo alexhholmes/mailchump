@@ -10,6 +10,8 @@ services:
     environment:
       ENVIRONMENT: "local"
       INIT_DB: "true"
+      MIGRATIONS: "tables.sql" # Order matters here
+      MIGRATIONS_DIR: "migrations"
     depends_on:
       - postgres
       - redis

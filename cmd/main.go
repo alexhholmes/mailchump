@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"log/slog"
 	"net/http"
@@ -17,42 +16,7 @@ import (
 func init() {
 	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
 	if env == "local" && os.Getenv("INIT_DB") != "" {
-		// Initialize the pgdb tables and add test data
-		db, err := pgdb.Init()
-		if err != nil {
-			log.Fatalf("Could not make db connection for dev environment initialization: %s", err.Error())
-		}
-		defer func(db *sql.DB) {
-			_ = db.Close()
-		}(db)
-
-		// Read the tables.sql file
-		query, err := os.ReadFile("tables.sql")
-		if err != nil {
-			log.Fatalf("Could not read migration file: %s", err.Error())
-		}
-
-		// Transaction to migrate entire tables.sql file the fresh database
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatalf("Could not start migration transaction: %s", err.Error())
-		}
-
-		// Execute the tables.sql file statements to create the empty tables
-		_, err = tx.Exec(string(query))
-		if err != nil {
-			roll := tx.Rollback()
-			if roll != nil {
-				log.Fatalf("Could not rollback migration transaction: %s", err.Error())
-			}
-			log.Fatalf("Could not execute migration statement: %s", err.Error())
-		}
-
-		// Commit the transaction
-		err = tx.Commit()
-		if err != nil {
-			log.Fatalf("Could not commit migration transaction: %s", err.Error())
-		}
+		pgdb.InitializeLocalDB()
 	}
 }
 

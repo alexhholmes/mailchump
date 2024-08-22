@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"mailchump/gen"
+	"mailchump/api/gen"
 )
 
 type HealthCheckHandler struct{}

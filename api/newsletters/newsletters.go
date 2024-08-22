@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"mailchump/gen"
+	"mailchump/api/gen"
+	"mailchump/api/util"
 	"mailchump/model"
 )
 
@@ -21,9 +22,10 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	user := r.Context().Value("user").(util.Key)
 	response := gen.AllNewsletterResponse{
 		Count:       len(newsletters),
-		Newsletters: newsletters.ToResponse(),
+		Newsletters: newsletters.ToResponse(user.String()),
 	}
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(response)
@@ -43,8 +45,9 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	user := r.Context().Value("user").(util.Key)
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(newsletter.ToResponse())
+	_ = json.NewEncoder(w).Encode(newsletter.ToResponse(user.String() == newsletter.OwnerID.String()))
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {

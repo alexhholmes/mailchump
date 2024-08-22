@@ -14,9 +14,9 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"mailchump/api/gen"
 	"mailchump/api/healthcheck"
 	"mailchump/api/newsletters"
-	"mailchump/gen"
 	"mailchump/pgdb"
 )
 
@@ -70,10 +70,14 @@ func Run() error {
 	return nil
 }
 
+// Check that the Handler implements the generated API interface
+var _ gen.ServerInterface = (*Handler)(nil)
+
 // Handler is a composition of the endpoint handlers. This allows the individuals handlers
 // to share the same resources, such as the database connection.
 type Handler struct {
 	db *sql.DB
+	// cache *redis.Client
 	newsletters.NewsletterHandler
 	healthcheck.HealthCheckHandler
 }
