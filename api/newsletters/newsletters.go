@@ -23,7 +23,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user := r.Context().Value("user").(util.Key)
+	user := r.Context().Value(util.ContextUser).(util.Key)
 	response := gen.AllNewsletterResponse{
 		Count:       len(newsletters),
 		Newsletters: newsletters.ToResponse(user),
@@ -49,9 +49,10 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	user := r.Context().Value("user").(util.Key)
+	user := r.Context().Value(util.ContextUser).(util.Key)
+	response := newsletter.ToResponse(user)
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(newsletter.ToResponse(user))
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {

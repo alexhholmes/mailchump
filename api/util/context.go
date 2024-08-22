@@ -1,5 +1,9 @@
 package util
 
+const (
+	ContextUser = "user"
+)
+
 // Key is the type for all context.Context keys.
 type Key string
 
