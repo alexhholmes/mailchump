@@ -1,13 +1,17 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	_ "github.com/lib/pq"
 	"mailchump/api/healthcheck"
@@ -41,12 +45,27 @@ func Run() error {
 		Addr:    "0.0.0.0:8080",
 	}
 
-	err = s.ListenAndServe()
-	if err != nil {
-		slog.Error("Server fatal runtime error", "error", err)
-		return err
+	// Used receive shutdown signal from SIGINT and SIGTERM
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		slog.Info("Server is listening", "address", s.Addr)
+		err = s.ListenAndServe()
+		if err != nil {
+			log.Fatalf("Server fatal runtime error: %s", err.Error())
+		}
+	}()
+
+	// Handle graceful shutdown
+	sig := <-signalChan
+	slog.Info("Server received shutdown signal", "signal", sig)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err = s.Shutdown(ctx); err != nil {
+		log.Fatalf("Server failed to shutdown: %s", err.Error())
 	}
-	slog.Info("Server is listening", "address", s.Addr)
+	slog.Info("Server shutdown successfully")
 
 	return nil
 }
