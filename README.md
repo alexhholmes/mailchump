@@ -49,6 +49,7 @@ In no particular order:
 - [ ] Add unit tests
 - [ ] Add integration tests
 - [ ] Add performance/load testing
+- [ ] Add regression testing
 - [ ] Add CI/CD pipeline with Github Actions
 - [ ] Add deployment to GCP
 - [ ] Add Open Telemetry tracing
@@ -60,6 +61,7 @@ In no particular order:
 - [ ] ? Optimize email sending for performance (e.g. batching or streaming to another service)
 - [ ] ? Shard database for scaling
 - [ ] ? Production monitoring and alerting
+- [ ] ? Fuzzing testing (not sure if this would be applicable to this project)
 
 ## References
 [github.com/alexhholmes/mailchump](https://github.com/alexhholmes/mailchump/blob/main/README.md)
