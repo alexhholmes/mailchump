@@ -1,7 +1,7 @@
 # Mailchump
 
 A shitty newsletter service made with vanilla golang and minimal dependencies;
-using PostgreSQL for storage and redis for caching. Additionally, it is packaged
+using PostgreSQL for storage and Redis for caching. Additionally, it is packaged
 with docker and tested/deployed to Google GCP using Github actions.
 
 _Why use big import when small import work good?_
@@ -30,14 +30,36 @@ go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 ```
 .
 ├── api          # API route handlers and application entrypoint
+│   └── gen      # Generated API code and codegen config file
 ├── cmd
 │   └── main.go  # Entrypoint
-├── gen          # Generated code and codegen configuration files
 ├── model        # Database models
 ├── pgdb         # Database connection initialization and utility functions
 ├── scripts      # Development environment scripts
 ├── Makefile     # Everything you need to test/build/deploy this project
 ```
+
+## Feature Roadmap
+In no particular order:
+- [ ] Complete all API endpoints in the OpenAPI spec
+- [ ] Complete all API endpoint implementations
+- [ ] Add user authentication
+- [ ] Add email sending of newsletters
+- [ ] Add Redis caching
+- [ ] Add unit tests
+- [ ] Add integration tests
+- [ ] Add performance/load testing
+- [ ] Add CI/CD pipeline with Github Actions
+- [ ] Add deployment to GCP
+- [ ] Add Open Telemetry tracing
+- [ ] Add Open Telemetry metrics
+- [ ] Export logs to ???
+- [ ] Add autoscaling to GCP deployment
+- [ ] ? Shard database for scaling
+- [ ] ? Shard cache for scaling
+- [ ] ? Optimize email sending for performance (e.g. batching or streaming to another service)
+- [ ] ? Shard database for scaling
+- [ ] ? Production monitoring and alerting
 
 ## References
 [github.com/alexhholmes/mailchump](https://github.com/alexhholmes/mailchump/blob/main/README.md)
