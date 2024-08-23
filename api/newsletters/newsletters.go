@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 
@@ -66,6 +67,27 @@ func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.
 }
 
 func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
-	//TODO implement me
-	panic("implement me")
+	parsed, err := uuid.Parse(id)
+	if err != nil {
+		slog.Info("Failed to parse id", "error", err)
+		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newsletter := model.Newsletter{Id: parsed}
+	err = newsletter.Get(r.Context(), h.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			slog.Info("Newsletter not found", "error", err)
+			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
+			return
+		}
+		slog.Warn("Failed to get newsletter", "error", err)
+		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+	}
+
+	user := r.Context().Value(util.ContextUser).(util.Key)
+	response := newsletter.ToResponse(user)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(response)
 }
