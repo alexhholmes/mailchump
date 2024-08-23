@@ -1,6 +1,6 @@
 # Mailchump
 
-A shitty newsletter service made with vanilla golang with minimal dependencies;
+A shitty newsletter service made with vanilla golang and minimal dependencies;
 using PostgreSQL for storage and redis for caching. Additionally, it is packaged
 with docker and tested/deployed to Google GCP using Github actions.
 
@@ -15,6 +15,7 @@ github.com/lib/pq               # PostgresDB driver for database/sql
 github.com/google/uuid          # IDs for database primary keys
 github.com/oapi-codegen/runtime # Open API 3 http server codegen
 github.com/redis/go-redis       # Caching
+github.com/stretchr/testify     # Testing; specifically for the assertions package
 ```
 
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
