@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"mailchump/api/gen"
-	"mailchump/api/newsletters"
 	"mailchump/api/util"
 	"mailchump/pgdb"
 )
@@ -38,6 +37,9 @@ func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 		WHERE deleted = false`,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
 		return err
 	}
 	defer pgdb.HandleCloseResult(rows)
@@ -60,16 +62,6 @@ func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 
 		*n = append(*n, newsletter)
 	}
-
-	// Scan the rows into a slice of Newsletters
-	//for rows.Next() {
-	//	var o Newsletter
-	//	if err = rows.Scan(&o.Id, &o.OwnerID, &o.Title, &o.Slug, &o.Description, &o.Created, &o.Updated, &o.PostCount, &o.Hidden, &o.Deleted, &o.RecoveryWindow); err != nil {
-	//		slog.Warn("failed to scan newsletter; schema issue", "error", err)
-	//		return err
-	//	}
-	//	*n = append(*n, o)
-	//}
 
 	// Check for errors during rows.Next
 	if err = rows.Close(); err != nil {
@@ -145,6 +137,9 @@ func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
 		n.Id,
 	).Scan(&n.OwnerID, &n.Title, &n.Slug, &n.Description, &n.Created, &n.Updated, &n.PostCount, &n.Hidden, &n.Deleted, &n.RecoveryWindow)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
 		return err
 	}
 
@@ -156,6 +151,9 @@ func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
 		n.Id,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
 		return err
 	}
 	defer pgdb.HandleCloseResult(rows)
@@ -173,7 +171,7 @@ func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
 
 func (n *Newsletter) GetOwnerID(ctx context.Context, db *sql.DB) error {
 	// Fetch the owner of the newsletter
-	return db.QueryRowContext(ctx,
+	err := db.QueryRowContext(ctx,
 		`SELECT owner
 		FROM newsletters
 		WHERE id = $1`,
@@ -211,7 +209,7 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 		// DB driver does not support RowsAffected
 		log.Fatal(err)
 	} else if affected == 0 {
-		return newsletters.ErrNewsletterAlreadyExists
+		return ErrAlreadyExists
 	}
 
 	// Add the owner as an author of the newsletter
@@ -241,11 +239,11 @@ func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return newsletters.ErrNewsletterNotFound
+			return ErrNotFound
 		}
 		return err
 	} else if affected, err := res.RowsAffected(); err != nil || affected == 0 {
-		return newsletters.ErrNoChanges
+		return ErrNotFound
 	}
 
 	// Check if the newsletter was deleted
@@ -253,7 +251,7 @@ func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
 		// DB driver does not support RowsAffected
 		log.Fatal(err)
 	} else if affected == 0 {
-		return newsletters.ErrNewsletterNotFound
+		return ErrNotFound
 	}
 
 	return nil
@@ -286,5 +284,16 @@ func (n *Newsletter) Hide(ctx context.Context, db *sql.DB) error {
 		return nil
 	}
 
-	return newsletters.ErrNewsletterNotFound
+	return ErrNotFound
+}
+
+func (n *Newsletter) IsOwner(ctx context.Context, db *sql.DB) (bool, error) {
+	// Check that the user is the newsletter owner
+	err := n.GetOwnerID(ctx, db)
+	if err != nil {
+		return false, err
+	}
+
+	user := ctx.Value(util.ContextUser).(string)
+	return user == n.OwnerID.String(), nil
 }

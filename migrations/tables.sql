@@ -12,7 +12,9 @@ create table newsletters
     deleted         boolean                  default false not null,
     recovery_window timestamp with time zone,
     constraint newsletters_pk
-        primary key (id)
+        primary key (id),
+    constraint newsletters_pk_2
+        unique (title)
 );
 
 alter table newsletters
@@ -30,7 +32,9 @@ create table users
     last_name  varchar(30)                    not null,
     email      varchar(255)                   not null,
     constraint users_pk
-        primary key (id)
+        primary key (id),
+    constraint users_pk_2
+        unique (user_name)
 );
 
 alter table users

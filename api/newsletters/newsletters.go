@@ -37,7 +37,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 
 func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
 	// TODO use newsletter request from gen
-	var newsletter model.Newsletter
+	newsletter := model.Newsletter{}
 	err := json.NewDecoder(r.Body).Decode(&newsletter)
 	if err != nil {
 		slog.Warn("Failed to decode request body", "error", err)
@@ -54,7 +54,7 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err = newsletter.Create(r.Context(), h.db); err != nil {
-		if errors.Is(err, ErrNewsletterAlreadyExists) {
+		if errors.Is(err, model.ErrAlreadyExists) {
 			slog.Info("Create newsletter; newsletter already exists", "error", err)
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
@@ -65,14 +65,40 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	}
 
 	response := newsletter.ToResponse(user.(util.Key))
-	slog.Info("Create newsletter")
+	slog.Info("Create newsletter",
+		"id", newsletter.Id,
+		"owner", newsletter.OwnerID,
+		"title", newsletter.Title,
+	)
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
-	//TODO implement me
-	panic("implement me")
+	parsed, err := uuid.Parse(id)
+	if err != nil {
+		slog.Info("Failed to parse id", "error", err)
+		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
+		return
+	}
+	newsletter := model.Newsletter{Id: parsed}
+
+	err = newsletter.Delete(r.Context(), h.db)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			slog.Info("Newsletter not found", "error", err)
+			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
+			return
+		}
+		slog.Warn("Failed to delete newsletter", "error", err)
+		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+	}
+
+	slog.Info("Delete newsletter", "id", id)
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(gen.StatusResponse{
+		Status: "newsletter deleted",
+	})
 }
 
 func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
@@ -82,11 +108,11 @@ func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Req
 		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
 		return
 	}
-
 	newsletter := model.Newsletter{Id: parsed}
+
 	err = newsletter.Get(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, model.ErrNotFound) {
 			slog.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -109,13 +135,31 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
 		return
 	}
-
 	newsletter := model.Newsletter{Id: parsed}
+
+	if ok, err := newsletter.IsOwner(r.Context(), h.db); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			slog.Info("Newsletter not found", "error", err)
+			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
+			return
+		}
+		slog.Warn("Failed to check if user is owner", "error", err)
+		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		return
+	} else if !ok {
+		slog.Info("User is not the owner of the newsletter",
+			"newsletter", id,
+			"user", r.Context().Value(util.ContextUser),
+			"owner", newsletter.OwnerID,
+		)
+		http.Error(w, util.ErrForbidden.Error(), http.StatusForbidden)
+		return
+	}
 
 	// Check that the user is the newsletter owner
 	err = newsletter.GetOwnerID(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, model.ErrNotFound) {
 			slog.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -131,7 +175,7 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 
 	err = newsletter.Hide(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, model.ErrNotFound) {
 			slog.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
