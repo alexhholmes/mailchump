@@ -2,7 +2,7 @@
 
 A shitty newsletter service made with vanilla golang and minimal dependencies;
 using PostgreSQL for storage and Redis for caching. Additionally, it is packaged
-with docker and tested/deployed to Google GCP using Github actions.
+with docker and tested/deployed to Google GCP using Github Actions.
 
 _Why use big import when small import work good?_
 
@@ -59,7 +59,7 @@ In no particular order:
 - [ ] ? Shard database for scaling
 - [ ] ? Shard cache for scaling
 - [ ] ? Optimize email sending for performance (e.g. batching or streaming to another service)
-- [ ] ? Shard database for scaling
+- [ ] ? Shard database for scaling (unintended replication pun)
 - [ ] ? Production monitoring and alerting
 - [ ] ? Fuzzing testing (not sure if this would be applicable to this project)
 

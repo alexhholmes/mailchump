@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"log"
 	"log/slog"
-	"mailchump/api/util"
 	"reflect"
 	"time"
 
 	"github.com/google/uuid"
 	"mailchump/api/gen"
 	"mailchump/api/newsletters"
+	"mailchump/api/util"
 	"mailchump/pgdb"
 )
 
@@ -135,8 +135,43 @@ func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
 	}
 }
 
+func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
+	// Fetch the newsletter from the database
+	err := db.QueryRowContext(ctx,
+		`SELECT owner, title, slug, description, created, updated, post_count, hidden, deleted, recovery_window
+		FROM newsletters
+		WHERE id = $1`,
+		n.Id,
+	).Scan(&n.OwnerID, &n.Title, &n.Slug, &n.Description, &n.Created, &n.Updated, &n.PostCount, &n.Hidden, &n.Deleted, &n.RecoveryWindow)
+	if err != nil {
+		return err
+	}
+
+	// Fetch all authors of the newsletter
+	rows, err := db.QueryContext(ctx,
+		`SELECT author
+		FROM newsletter_authors
+		WHERE newsletter = $1`,
+		n.Id,
+	)
+	if err != nil {
+		return err
+	}
+	defer pgdb.HandleCloseResult(rows)
+
+	for rows.Next() {
+		var author uuid.UUID
+		if err = rows.Scan(&author); err != nil {
+			return err
+		}
+		n.AuthorIDs = append(n.AuthorIDs, author)
+	}
+
+	return nil
+}
+
 func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	n.Id = uuid.New()
 	n.Created = now

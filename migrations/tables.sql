@@ -1,6 +1,6 @@
 create table newsletters
 (
-    id              uuid                                   not null,
+    id              uuid default gen_random_uuid()         not null,
     owner_id        uuid                                   not null,
     title           varchar(300)                           not null,
     slug            varchar(300)                           not null,
@@ -38,7 +38,7 @@ alter table users
 
 create table posts
 (
-    id              uuid                                   not null,
+    id              uuid default gen_random_uuid()         not null,
     owner_id        uuid                                   not null,
     title           varchar(300)                           not null,
     slug            varchar(300)                           not null,

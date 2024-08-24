@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 
+	"github.com/google/uuid"
 	"mailchump/api/gen"
 	"mailchump/api/util"
 	"mailchump/model"
@@ -57,6 +57,7 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 
 	user := r.Context().Value(util.ContextUser).(util.Key)
 	response := newsletter.ToResponse(user)
+	slog.Info("Create newsletter")
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -88,6 +89,7 @@ func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Req
 
 	user := r.Context().Value(util.ContextUser).(util.Key)
 	response := newsletter.ToResponse(user)
+	slog.Info("Get newsletter by id", "owner", response.Owner)
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(response)
 }

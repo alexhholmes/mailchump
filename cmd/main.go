@@ -23,8 +23,8 @@ func init() {
 func main() {
 	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
 
-	// Lets us initialize the pgdb and add test data without running the server for local
-	// development.
+	// Lets us initialize the database and add test data without running the server; for
+	// local development.
 	if env == "local" && os.Getenv("INIT_ONLY") != "" {
 		return
 	}
@@ -33,7 +33,7 @@ func main() {
 	if env == "local" || env == "dev" {
 		go func() {
 			pprof := "0.0.0.0:6060"
-			slog.Info("server is listening", "pprof", pprof)
+			slog.Info("Server is listening (pprof)", "address", pprof)
 			log.Fatal(http.ListenAndServe(pprof, nil))
 		}()
 	}

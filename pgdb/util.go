@@ -64,7 +64,7 @@ func InitializeLocalDB() {
 		f = strings.TrimSpace(f)
 		file, err := os.ReadFile(os.Getenv("MIGRATIONS_DIR") + "/" + f)
 		if err != nil {
-			return
+			log.Fatalf("Could not read migration file: %s", err.Error())
 		}
 		files = append(files, string(file))
 	}

@@ -80,7 +80,7 @@ paths:
   /newsletters/{id}:
     get:
       operationId: GetNewsletterById
-      description: Get information about a newsletter
+      description: Get information about a specific newsletter
       parameters:
         - name: id
           in: path
@@ -101,27 +101,6 @@ paths:
           $ref: '#/components/responses/not-found'
         '500':
           $ref: '#/components/responses/internal-error'
-#    put:
-#      description: Update information about a newsletter (owning author only)
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/UpdateNewsletterRequest'
-#      responses:
-#        '200':
-#          description: updated information about this newsletter and a list of posts
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/UpdateNewsletterResponse'
-#        '403':
-#          $ref: '#/components/responses/forbidden'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
     delete:
         operationId: DeleteNewsletterById
         description: Delete a newsletter (owning author only)
@@ -154,102 +133,35 @@ paths:
             $ref: '#/components/responses/not-found'
           '500':
             $ref: '#/components/responses/internal-error'
-#  /newsletters/{id}/posts:
-#    get:
-#      description: Get all posts for this newsletter
-#      responses:
-#        '200':
-#          description: list of all posts for this newsletter
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthCheck'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
-#    post:
-#      description: Create a new post for this newsletter (authors only)
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/HealthCheck'
-#      responses:
-#        '200':
-#          description: newsletter post created
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthCheck'
-#        '400':
-#          $ref: '#/components/responses/bad-request'
-#        '403':
-#          $ref: '#/components/responses/forbidden'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
-#  /newsletters/{id}/posts/{post_id}:
-#    get:
-#      description: Get a specific post from this newsletter
-#      responses:
-#        '200':
-#          description: newsletter post response
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthCheck'
-#        '400':
-#          $ref: '#/components/responses/bad-request'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
-#  /newsletters/{id}/subscription:
-#    post:
-#      description: Subscribe to this newsletter
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/SubscriptionRequest'
-#      responses:
-#        '200':
-#          description: subscription response
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/SubscriptionResponse'
-#        '400':
-#          $ref: '#/components/responses/bad-request'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
-#    delete:
-#      description: Unsubscribe from this newsletter
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/SubscriptionRequest'
-#      responses:
-#        '200':
-#          description: unsubscription response
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/SubscriptionResponse'
-#        '400':
-#          $ref: '#/components/responses/bad-request'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
+  /newsletters/{id}/hide:
+    patch:
+        description: Toggles a newsletter's visibility (authors only)
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: The ID of the newsletter
+            schema:
+              type: string
+        responses:
+            '200':
+                description: newsletter visibility status
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      required:
+                        - status
+                      properties:
+                        status:
+                            type: string
+                            example: newsletter hidden
+            '403':
+                $ref: '#/components/responses/forbidden'
+            '404':
+                $ref: '#/components/responses/not-found'
+            '500':
+                $ref: '#/components/responses/internal-error'
   /healthcheck:
     get:
       responses:

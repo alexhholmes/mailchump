@@ -41,7 +41,7 @@ func Run() error {
 	r := http.NewServeMux()
 	h := gen.HandlerWithOptions(&server, gen.StdHTTPServerOptions{
 		BaseRouter:  r,
-		Middlewares: []gen.MiddlewareFunc{},
+		Middlewares: []gen.MiddlewareFunc{}, // TODO add middlewares
 	})
 	s := &http.Server{
 		Handler: h,
