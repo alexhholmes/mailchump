@@ -231,7 +231,31 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 }
 
 func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
-	// TODO implement me
+	// Delete the newsletter from the database
+	res, err := db.ExecContext(ctx,
+		`UPDATE newsletters
+		SET deleted = true, recovery_window = $2
+		WHERE id = $1
+		AND deleted = false`,
+		n.Id, time.Now().AddDate(0, 0, 7), // TODO add recovery time to config
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return newsletters.ErrNewsletterNotFound
+		}
+		return err
+	} else if affected, err := res.RowsAffected(); err != nil || affected == 0 {
+		return newsletters.ErrNoChanges
+	}
+
+	// Check if the newsletter was deleted
+	if affected, err := res.RowsAffected(); err != nil {
+		// DB driver does not support RowsAffected
+		log.Fatal(err)
+	} else if affected == 0 {
+		return newsletters.ErrNewsletterNotFound
+	}
+
 	return nil
 }
 
