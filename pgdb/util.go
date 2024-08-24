@@ -6,8 +6,32 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"reflect"
 	"strings"
 )
+
+// MapStruct uses reflection to map the columns of a sql.Rows to
+// a generic struct.
+func MapStruct[T any](rows *sql.Rows) T {
+	var fields T
+
+	val := reflect.ValueOf(&fields).Elem()
+	numCols := val.NumField()
+	columns := make([]interface{}, numCols)
+	for i := 0; i < numCols; i++ {
+		columns[i] = val.
+			Field(i).
+			Addr().
+			Interface()
+	}
+
+	err := rows.Scan(columns...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return fields
+}
 
 // HandleTxError is a helper function to handle transaction commit/rollback;
 // it will roll back the transaction if an error is passed. In other cases

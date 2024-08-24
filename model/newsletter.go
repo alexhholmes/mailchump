@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"log/slog"
-	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,21 +44,7 @@ func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 	defer pgdb.HandleCloseResult(rows)
 
 	for rows.Next() {
-		newsletter := Newsletter{}
-
-		s := reflect.ValueOf(&newsletter).Elem()
-		numCols := s.NumField()
-		columns := make([]interface{}, numCols)
-		for i := 0; i < numCols; i++ {
-			field := s.Field(i)
-			columns[i] = field.Addr().Interface()
-		}
-
-		err := rows.Scan(columns...)
-		if err != nil {
-			log.Fatal(err)
-		}
-
+		newsletter := pgdb.MapStruct[Newsletter](rows)
 		*n = append(*n, newsletter)
 	}
 
