@@ -150,13 +150,7 @@ paths:
               content:
                 application/json:
                   schema:
-                    type: object
-                    required:
-                      - status
-                    properties:
-                      status:
-                          type: string
-                          example: newsletter hidden
+                    $ref: '#/components/schemas/StatusResponse'
           '403':
               $ref: '#/components/responses/forbidden'
           '404':
@@ -263,6 +257,14 @@ components:
           type: boolean
           nullable: true
           example: false
+    StatusResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: operation successful
     HealthCheck:
       type: object
       required:

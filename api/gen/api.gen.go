@@ -58,6 +58,11 @@ type NotFound struct {
 	Message string `json:"message"`
 }
 
+// StatusResponse defines model for StatusResponse.
+type StatusResponse struct {
+	Status string `json:"status"`
+}
+
 // InternalError defines model for internal-error.
 type InternalError = InternalServerError
 

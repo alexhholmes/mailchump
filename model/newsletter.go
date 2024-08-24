@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"log/slog"
 	"reflect"
@@ -222,4 +223,34 @@ func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 func (n *Newsletter) Delete(ctx context.Context, db *sql.DB) error {
 	// TODO implement me
 	return nil
+}
+
+// Hide changes the hidden field of a Newsletter to the opposite of its current value.
+func (n *Newsletter) Hide(ctx context.Context, db *sql.DB) error {
+	if n.Id == uuid.Nil {
+		return errors.New("nil UUID")
+	}
+
+	// Flip the hidden field of the newsletter
+	res, err := db.QueryContext(ctx,
+		`UPDATE newsletters
+		SET hidden = NOT hidden
+		WHERE id = $1
+		RETURNING hidden`,
+		n.Id,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Get newsletter hidden status from result
+	if res.Next() {
+		if err = res.Scan(&n.Hidden); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return newsletters.ErrNewsletterNotFound
 }
