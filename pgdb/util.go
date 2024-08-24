@@ -40,7 +40,7 @@ func MapStruct[T any, R scan](row R) (T, error) {
 
 	err := row.Scan(columns...)
 	if err != nil {
-		log.Fatal(err)
+		return fields, err
 	}
 
 	return fields, nil
