@@ -54,7 +54,9 @@ create table posts
     deleted         boolean                  default false not null,
     recovery_window timestamp,
     constraint posts_pk
-        primary key (id)
+        primary key (id),
+    constraint posts_pk_2
+        unique (owner_id, title)
 );
 
 alter table posts
