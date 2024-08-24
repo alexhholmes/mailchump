@@ -135,33 +135,34 @@ paths:
             $ref: '#/components/responses/internal-error'
   /newsletters/{id}/hide:
     patch:
-        description: Toggles a newsletter's visibility (authors only)
-        parameters:
-          - name: id
-            in: path
-            required: true
-            description: The ID of the newsletter
-            schema:
-              type: string
-        responses:
-            '200':
-                description: newsletter visibility status
-                content:
-                  application/json:
-                    schema:
-                      type: object
-                      required:
-                        - status
-                      properties:
-                        status:
-                            type: string
-                            example: newsletter hidden
-            '403':
-                $ref: '#/components/responses/forbidden'
-            '404':
-                $ref: '#/components/responses/not-found'
-            '500':
-                $ref: '#/components/responses/internal-error'
+      operationId: HideNewsletter
+      description: Toggles a newsletter's visibility (authors only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the newsletter
+          schema:
+            type: string
+      responses:
+          '200':
+              description: newsletter visibility status
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required:
+                      - status
+                    properties:
+                      status:
+                          type: string
+                          example: newsletter hidden
+          '403':
+              $ref: '#/components/responses/forbidden'
+          '404':
+              $ref: '#/components/responses/not-found'
+          '500':
+              $ref: '#/components/responses/internal-error'
   /healthcheck:
     get:
       responses:

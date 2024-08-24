@@ -93,3 +93,8 @@ func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(response)
 }
+
+func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Request, id string) {
+	//TODO implement me
+	panic("implement me")
+}

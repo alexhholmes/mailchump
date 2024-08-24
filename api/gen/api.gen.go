@@ -89,6 +89,9 @@ type ServerInterface interface {
 
 	// (GET /newsletters/{id})
 	GetNewsletterById(w http.ResponseWriter, r *http.Request, id string)
+
+	// (PATCH /newsletters/{id}/hide)
+	HideNewsletter(w http.ResponseWriter, r *http.Request, id string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -188,6 +191,32 @@ func (siw *ServerInterfaceWrapper) GetNewsletterById(w http.ResponseWriter, r *h
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetNewsletterById(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// HideNewsletter operation middleware
+func (siw *ServerInterfaceWrapper) HideNewsletter(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.HideNewsletter(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -316,6 +345,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/newsletters", wrapper.CreateNewsletter)
 	m.HandleFunc("DELETE "+options.BaseURL+"/newsletters/{id}", wrapper.DeleteNewsletterById)
 	m.HandleFunc("GET "+options.BaseURL+"/newsletters/{id}", wrapper.GetNewsletterById)
+	m.HandleFunc("PATCH "+options.BaseURL+"/newsletters/{id}/hide", wrapper.HideNewsletter)
 
 	return m
 }
