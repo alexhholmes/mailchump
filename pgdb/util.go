@@ -24,7 +24,7 @@ type Interface interface {
 func MapStruct[T any, R Interface](row R) (T, error) {
 	var fields T
 
-	if row == nil {
+	if &row == nil {
 		return fields, sql.ErrNoRows
 	}
 
