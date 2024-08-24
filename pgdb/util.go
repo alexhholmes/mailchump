@@ -43,7 +43,7 @@ func MapStruct[T any, R Interface](row R) (T, error) {
 		log.Fatal(err)
 	}
 
-	return fields
+	return fields, nil
 }
 
 // HandleTxError is a helper function to handle transaction commit/rollback;

@@ -108,41 +108,24 @@ func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
 
 func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
 	// Fetch the newsletter from the database
-	err := db.QueryRowContext(ctx,
-		`SELECT owner, title, slug, description, created, updated, post_count, hidden, deleted, recovery_window
+	row := db.QueryRowContext(ctx,
+		`SELECT *
 		FROM newsletters
 		WHERE id = $1`,
 		n.Id,
-	).Scan(&n.OwnerID, &n.Title, &n.Slug, &n.Description, &n.Created, &n.Updated, &n.PostCount, &n.Hidden, &n.Deleted, &n.RecoveryWindow)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrNotFound
-		}
-		return err
-	}
-
-	// Fetch all authors of the newsletter
-	rows, err := db.QueryContext(ctx,
-		`SELECT author
-		FROM newsletter_authors
-		WHERE newsletter = $1`,
-		n.Id,
 	)
+
+	newsletter, err := pgdb.MapStruct[Newsletter](row)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNotFound
 		}
 		return err
 	}
-	defer pgdb.HandleCloseResult(rows)
 
-	for rows.Next() {
-		var author uuid.UUID
-		if err = rows.Scan(&author); err != nil {
-			return err
-		}
-		n.AuthorIDs = append(n.AuthorIDs, author)
-	}
+	// TODO get all authors from the posts of this newsletter
+	newsletter.AuthorIDs = []uuid.UUID{newsletter.OwnerID}
+	*n = newsletter
 
 	return nil
 }
