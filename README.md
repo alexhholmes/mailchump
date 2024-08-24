@@ -52,8 +52,7 @@ In no particular order:
 - [ ] Add regression testing
 - [ ] Add CI/CD pipeline with Github Actions
 - [ ] Add deployment to GCP
-- [ ] Add Open Telemetry tracing
-- [ ] Add Open Telemetry metrics
+- [ ] Add Open Telemetry tracing and metrics
 - [ ] Export logs to ???
 - [ ] Add autoscaling to GCP deployment
 - [ ] ? Shard database for scaling
