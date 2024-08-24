@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,14 +43,8 @@ func (n *Newsletters) GetAll(ctx context.Context, db *sql.DB) error {
 	defer pgdb.HandleCloseResult(rows)
 
 	for rows.Next() {
-		newsletter := pgdb.MapStruct[Newsletter](rows)
+		newsletter, _ := pgdb.MapStruct[Newsletter](rows)
 		*n = append(*n, newsletter)
-	}
-
-	// Check for errors during rows.Next
-	if err = rows.Close(); err != nil {
-		slog.Warn("failed to close rows", "error", err)
-		return err
 	}
 
 	return nil
