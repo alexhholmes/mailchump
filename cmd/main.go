@@ -5,7 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"mailchump/api"
 	"mailchump/pgdb"
@@ -18,16 +20,21 @@ func init() {
 	if env == "local" && os.Getenv("INIT_DB") != "" {
 		pgdb.InitializeLocalDB()
 	}
-}
-
-func main() {
-	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
+	slog.Info("Database migration complete")
 
 	// Lets us initialize the database and add test data without running the server; for
 	// local development.
 	if env == "local" && os.Getenv("INIT_ONLY") != "" {
-		return
+		signalChan := make(chan os.Signal, 1)
+		signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+		<-signalChan
+		os.Exit(0)
 	}
+}
+
+func main() {
+	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
 
 	// pprof web server. See: https://golang.org/pkg/net/http/pprof/
 	if env == "local" || env == "dev" {

@@ -12,6 +12,7 @@ services:
       INIT_DB: "true"
       MIGRATIONS: "tables.sql" # Order matters here
       MIGRATIONS_DIR: "migrations"
+      INIT_ONLY: "${INIT_ONLY}"
     depends_on:
       - postgres
       - redis
