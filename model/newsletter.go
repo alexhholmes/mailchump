@@ -177,6 +177,14 @@ func (n *Newsletter) GetOwnerID(ctx context.Context, db *sql.DB) error {
 		WHERE id = $1`,
 		n.Id,
 	).Scan(&n.OwnerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
