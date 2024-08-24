@@ -113,7 +113,7 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 	newsletter := model.Newsletter{Id: parsed}
 
 	// Check that the user is the newsletter owner
-	err = newsletter.Get(r.Context(), h.db)
+	err = newsletter.GetOwnerID(r.Context(), h.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			slog.Info("Newsletter not found", "error", err)

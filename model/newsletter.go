@@ -171,6 +171,16 @@ func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
+func (n *Newsletter) GetOwnerID(ctx context.Context, db *sql.DB) error {
+	// Fetch the owner of the newsletter
+	return db.QueryRowContext(ctx,
+		`SELECT owner
+		FROM newsletters
+		WHERE id = $1`,
+		n.Id,
+	).Scan(&n.OwnerID)
+}
+
 func (n *Newsletter) Create(ctx context.Context, db *sql.DB) error {
 	now := time.Now().UTC()
 
