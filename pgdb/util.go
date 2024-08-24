@@ -13,15 +13,15 @@ import (
 // TODO write a unit tests and runtime check during init() to ensure that the
 // `model` pkg structs all adhere to to the `tables.sql` schema.
 
-// Interface is an interface for the Scan method of sql.Rows
+// scan is an interface for the Scan method of sql.Rows
 // and sql.Row.
-type Interface interface {
+type scan interface {
 	Scan(dest ...any) error
 }
 
 // MapStruct uses reflection to map the columns of a sql.Rows to
 // a generic struct.
-func MapStruct[T any, R Interface](row R) (T, error) {
+func MapStruct[T any, R scan](row R) (T, error) {
 	var fields T
 
 	if &row == nil {
