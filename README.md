@@ -34,6 +34,7 @@ go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 ├── cmd
 │   └── main.go  # Entrypoint
 ├── model        # Database models
+├── migrations   # Database SQL migrations
 ├── pgdb         # Database connection initialization and utility functions
 ├── scripts      # Development environment scripts
 ├── Makefile     # Everything you need to test/build/deploy this project

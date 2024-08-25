@@ -211,6 +211,7 @@ components:
       type: object
       required:
         - id
+        - owner
         - authors
         - title
         - slug
@@ -224,7 +225,6 @@ components:
           example: 123
         owner:
           type: string
-          nullable: true
           example: 550e8400-e29b-41d4-a716-446655440000
         authors:
           type: array

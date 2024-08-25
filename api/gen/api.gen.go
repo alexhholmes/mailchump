@@ -46,7 +46,7 @@ type NewsletterResponse struct {
 	Description string   `json:"description"`
 	Hidden      *bool    `json:"hidden"`
 	Id          string   `json:"id"`
-	Owner       *string  `json:"owner"`
+	Owner       string   `json:"owner"`
 	PostCount   int      `json:"post_count"`
 	Slug        string   `json:"slug"`
 	Title       string   `json:"title"`

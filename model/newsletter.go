@@ -71,21 +71,10 @@ func (n *Newsletter) Validate() error {
 	return nil
 }
 
+// ToResponse converts a Newsletter to a gen.NewsletterResponse. This will hide the
+// following fields if the user is not the owner: Hidden and Deleted.
 func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
-	// Hide fields if the user is not an owner
-	var (
-		owner   *string
-		hidden  *bool
-		deleted *bool
-	)
-	if user.String() == n.OwnerID.String() {
-		s := n.OwnerID.String()
-		owner = &s
-		hidden = &n.Hidden
-		deleted = &n.Deleted
-	}
-
-	return gen.NewsletterResponse{
+	resp := gen.NewsletterResponse{
 		Authors: func() []string {
 			var authors []string
 			for _, a := range n.AuthorIDs {
@@ -94,16 +83,23 @@ func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
 			return authors
 		}(),
 		CreatedAt:   n.Created.String(),
-		Deleted:     deleted,
+		Deleted:     nil,
 		Description: n.Description,
-		Hidden:      hidden,
+		Hidden:      nil,
 		Id:          n.Id.String(),
-		Owner:       owner,
+		Owner:       n.OwnerID.String(),
 		PostCount:   n.PostCount,
 		Slug:        n.Slug,
 		Title:       n.Title,
 		UpdatedAt:   n.Updated.String(),
 	}
+	// Hide fields if the user is not an owner
+	if user.String() == n.OwnerID.String() {
+		resp.Hidden = &n.Hidden
+		resp.Deleted = &n.Deleted
+	}
+
+	return resp
 }
 
 func (n *Newsletter) Get(ctx context.Context, db *sql.DB) error {
@@ -243,13 +239,13 @@ func (n *Newsletter) Hide(ctx context.Context, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	defer pgdb.HandleCloseResult(res)
 
 	// Get newsletter hidden status from result
 	if res.Next() {
 		if err = res.Scan(&n.Hidden); err != nil {
 			return err
 		}
-
 		return nil
 	}
 
