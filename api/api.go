@@ -14,9 +14,11 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+
 	"mailchump/api/gen"
 	"mailchump/api/healthcheck"
 	"mailchump/api/newsletters"
+	"mailchump/middleware"
 	"mailchump/pgdb"
 )
 
@@ -39,10 +41,16 @@ func Run() error {
 
 	// Get an `http.Handler` that we can use
 	r := http.NewServeMux()
-	h := gen.HandlerWithOptions(&server, gen.StdHTTPServerOptions{
-		BaseRouter:  r,
-		Middlewares: []gen.MiddlewareFunc{}, // TODO add middlewares
-	})
+	h := gen.HandlerWithOptions(
+		&server, gen.StdHTTPServerOptions{
+			BaseRouter: r,
+			Middlewares: []gen.MiddlewareFunc{
+				middleware.RecoveryMiddleware,
+				middleware.LogRequestMiddleware,
+				middleware.CreateAuthMiddleware(server.db),
+			},
+		},
+	)
 	s := &http.Server{
 		Handler: h,
 		Addr:    "0.0.0.0:8080",
