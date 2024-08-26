@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+
 	"mailchump/api/gen"
 	"mailchump/api/util"
 	"mailchump/model"
@@ -22,7 +23,11 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 	err := newsletters.GetAll(r.Context(), h.db)
 	if err != nil {
 		slog.Warn("Failed to get newsletters", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -49,7 +54,11 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	newsletter.OwnerID, err = uuid.Parse(user.(string))
 	if err != nil {
 		slog.Error("Failed to parse user id", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -60,12 +69,17 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		slog.Warn("Failed to create newsletter", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
 	response := newsletter.ToResponse(user.(util.Key))
-	slog.Info("Create newsletter",
+	slog.Info(
+		"Create newsletter",
 		"id", newsletter.Id,
 		"owner", newsletter.OwnerID,
 		"title", newsletter.Title,
@@ -74,7 +88,11 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
+func (h *NewsletterHandler) DeleteNewsletterById(
+	w http.ResponseWriter,
+	r *http.Request,
+	id string,
+) {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		slog.Info("Failed to parse id", "error", err)
@@ -91,17 +109,27 @@ func (h *NewsletterHandler) DeleteNewsletterById(w http.ResponseWriter, r *http.
 			return
 		}
 		slog.Warn("Failed to delete newsletter", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 	}
 
 	slog.Info("Delete newsletter", "id", id)
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(gen.StatusResponse{
-		Status: "newsletter deleted",
-	})
+	_ = json.NewEncoder(w).Encode(
+		gen.StatusResponse{
+			Status: "newsletter deleted",
+		},
+	)
 }
 
-func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Request, id string) {
+func (h *NewsletterHandler) GetNewsletterById(
+	w http.ResponseWriter,
+	r *http.Request,
+	id string,
+) {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		slog.Info("Failed to parse id", "error", err)
@@ -118,7 +146,11 @@ func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Req
 			return
 		}
 		slog.Warn("Failed to get newsletter", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 	}
 
 	user := r.Context().Value(util.ContextUser).(util.Key)
@@ -128,7 +160,11 @@ func (h *NewsletterHandler) GetNewsletterById(w http.ResponseWriter, r *http.Req
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Request, id string) {
+func (h *NewsletterHandler) HideNewsletter(
+	w http.ResponseWriter,
+	r *http.Request,
+	id string,
+) {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		slog.Info("Failed to parse id", "error", err)
@@ -144,10 +180,15 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		slog.Warn("Failed to check if user is owner", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else if !ok {
-		slog.Info("User is not the owner of the newsletter",
+		slog.Info(
+			"User is not the owner of the newsletter",
 			"newsletter", id,
 			"user", r.Context().Value(util.ContextUser),
 			"owner", newsletter.OwnerID,
@@ -165,11 +206,18 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		slog.Warn("Failed to get newsletter", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 	}
 	user := r.Context().Value(util.ContextUser).(string)
 	if user != newsletter.OwnerID.String() {
-		slog.Info("User is not the owner of the newsletter", "user", user, "owner", newsletter.OwnerID)
+		slog.Info("User is not the owner of the newsletter",
+			"user", user,
+			"owner", newsletter.OwnerID,
+		)
 		http.Error(w, util.ErrForbidden.Error(), http.StatusForbidden)
 	}
 
@@ -181,7 +229,11 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 			return
 		}
 		slog.Warn("Failed to hide newsletter", "error", err)
-		http.Error(w, util.ErrInternalServerError.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 	}
 
 	slog.Info("Hide newsletter",
@@ -195,7 +247,9 @@ func (h *NewsletterHandler) HideNewsletter(w http.ResponseWriter, r *http.Reques
 		status = "newsletter unhidden"
 	}
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(gen.StatusResponse{
-		Status: status,
-	})
+	_ = json.NewEncoder(w).Encode(
+		gen.StatusResponse{
+			Status: status,
+		},
+	)
 }
