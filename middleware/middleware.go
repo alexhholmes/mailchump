@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"log/slog"
@@ -38,9 +39,9 @@ func LogRequestMiddleware(next http.Handler) http.Handler {
 					return ""
 				}(),
 			)
-			slog.SetDefault(slogWithReq)
+			ctx := context.WithValue(r.Context(), "logger", slogWithReq)
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		},
 	)
 }
