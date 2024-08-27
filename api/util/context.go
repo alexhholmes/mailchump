@@ -1,7 +1,8 @@
 package util
 
 const (
-	ContextUser = "user"
+	ContextUser   = "user"
+	ContextLogger = "logger"
 )
 
 // Key is the type for all context.Context keys.

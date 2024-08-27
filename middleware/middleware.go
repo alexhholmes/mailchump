@@ -6,6 +6,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+
+	"mailchump/api/util"
 )
 
 func CreateAuthMiddleware(db *sql.DB) func(next http.Handler) http.Handler {
@@ -39,7 +41,7 @@ func LogRequestMiddleware(next http.Handler) http.Handler {
 					return ""
 				}(),
 			)
-			ctx := context.WithValue(r.Context(), "logger", slogWithReq)
+			ctx := context.WithValue(r.Context(), util.ContextLogger, slogWithReq)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		},
