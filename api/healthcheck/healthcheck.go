@@ -7,11 +7,11 @@ import (
 	"mailchump/api/gen"
 )
 
-type HealthCheckHandler struct{}
+type HealthHandler struct{}
 
 // GetHealthcheck returns HTTP status 200.
 // GET /ping
-func (h *HealthCheckHandler) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) GetHealthcheck(w http.ResponseWriter, _ *http.Request) {
 	resp := gen.HealthCheck{
 		Status: "ok",
 	}

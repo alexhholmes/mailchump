@@ -90,7 +90,7 @@ type Handler struct {
 	db *sql.DB
 	// cache *redis.Client
 	newsletters.NewsletterHandler
-	healthcheck.HealthCheckHandler
+	healthcheck.HealthHandler
 }
 
 // NewHandler creates a new Handler instance, initializing the database connection.

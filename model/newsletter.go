@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"mailchump/api/gen"
 	"mailchump/api/util"
 	"mailchump/pgdb"
