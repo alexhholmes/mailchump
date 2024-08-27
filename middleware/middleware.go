@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"database/sql"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -54,7 +53,12 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 		func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Printf("Recovered from panic: %v", err)
+					log, ok := r.Context().Value(util.ContextLogger).(*slog.Logger)
+					if !ok {
+						log = slog.Default()
+					}
+
+					log.Info("Recovered from panic: %v", err)
 					http.Error(
 						w,
 						http.StatusText(http.StatusInternalServerError),
