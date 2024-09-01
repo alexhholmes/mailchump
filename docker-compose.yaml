@@ -10,7 +10,7 @@ services:
     environment:
       ENVIRONMENT: "local"
       INIT_DB: "true"
-      MIGRATIONS: "tables.sql" # Order matters here
+      MIGRATIONS: "tables.sql,users.sql" # Order matters here
       MIGRATIONS_DIR: "migrations"
       INIT_ONLY: "${INIT_ONLY}"
     depends_on:

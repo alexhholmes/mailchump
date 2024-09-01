@@ -13,14 +13,13 @@ import (
 // TODO write a unit tests and runtime check during init() to ensure that the
 // `model` pkg structs all adhere to to the `tables.sql` schema.
 
-// scan is an interface for the Scan method of sql.Rows
-// and sql.Row.
+// scan is an interface for the Scan method of sql.Rows and sql.Row.
 type scan interface {
 	Scan(dest ...any) error
 }
 
-// MapStruct uses reflection to map the columns of a sql.Rows to
-// a generic struct.
+// MapStruct uses reflection to map the columns of a sql.Rows to a generic
+// struct.
 func MapStruct[T any, R scan](row R) (T, error) {
 	var fields T
 
@@ -46,9 +45,9 @@ func MapStruct[T any, R scan](row R) (T, error) {
 	return fields, nil
 }
 
-// HandleTxError is a helper function to handle transaction commit/rollback;
-// it will roll back the transaction if an error is passed. In other cases
-// it will do nothing.
+// HandleTxError is a helper function to handle transaction commit/rollback; it
+// will roll back the transaction if an error is passed. In other cases it will
+// do nothing.
 func HandleTxError(err error, tx *sql.Tx) func() {
 	return func() {
 		// Ignore ErrTxDone as just means the transaction is already complete
@@ -71,8 +70,8 @@ func HandleCloseResult(res *sql.Rows) func() {
 	}
 }
 
-// InitializeLocalDB initializes the pgdb tables and adds test data. This will log fatal
-// any error that occurs.
+// InitializeLocalDB initializes the pgdb tables and adds test data. This will
+// log fatal any error that occurs.
 func InitializeLocalDB() {
 	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
 	if env != "local" {
@@ -108,26 +107,9 @@ func InitializeLocalDB() {
 
 	// Execute the SQL migrations to postgres
 	for _, query := range files {
-		// Transaction to migrate entire tables.sql files the fresh database
-		tx, err := db.Begin()
+		_, err := db.Exec(query)
 		if err != nil {
-			log.Fatalf("Could not start migration transaction: %s", err.Error())
-		}
-
-		// Execute the tables.sql files statements to create the empty tables
-		_, err = tx.Exec(query)
-		if err != nil {
-			roll := tx.Rollback()
-			if roll != nil {
-				log.Fatalf("Could not rollback migration transaction: %s", err.Error())
-			}
-			log.Fatalf("Could not execute migration statement: %s", err.Error())
-		}
-
-		// Commit the transaction
-		err = tx.Commit()
-		if err != nil {
-			log.Fatalf("Could not commit migration transaction: %s", err.Error())
+			log.Fatalf("Could not execute migration: %s", err.Error())
 		}
 	}
 }

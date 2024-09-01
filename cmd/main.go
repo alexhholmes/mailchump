@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"mailchump/api"
-	"mailchump/pgdb"
+	"mailchump/pkg/api"
+	"mailchump/pkg/pgdb"
 )
 
 // init initializes the pgdb tables and adds test data. This is for local testing purposes

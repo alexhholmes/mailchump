@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"mailchump/api/gen"
-	"mailchump/api/util"
-	"mailchump/pgdb"
+	"mailchump/pkg/api/gen"
+	"mailchump/pkg/api/util"
+	"mailchump/pkg/pgdb"
 )
 
 type Newsletters []Newsletter

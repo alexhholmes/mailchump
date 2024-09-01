@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"log/slog"
 	"net/http"
+	"os"
+	"strings"
 
-	"mailchump/api/util"
+	"mailchump/pkg/api/util"
 )
 
 func CreateAuthMiddleware(db *sql.DB) func(next http.Handler) http.Handler {
@@ -16,10 +18,39 @@ func CreateAuthMiddleware(db *sql.DB) func(next http.Handler) http.Handler {
 				// TODO authentication middleware for the api with jwt token from cookie added to context
 				// TODO add user id to context as "user" key
 				// TODO if the user is not authenticated, direct to login
+
+				env := strings.ToLower(os.Getenv("ENV"))
+				if env == "local" || env == "dev" {
+					ctx := context.WithValue(r.Context(), util.ContextUser, "00000000-0000-0000-0000-000000000000")
+					next.ServeHTTP(w, r.WithContext(ctx))
+				}
+
 				next.ServeHTTP(w, r)
 			},
 		)
 	}
+}
+
+func HeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			contentType := strings.ToLower(r.Header.Get("Content-Type"))
+			if contentType != "" && !strings.HasPrefix(contentType, "application/json") {
+				http.Error(w, "Content-Type header must be application/json", http.StatusBadRequest)
+				return
+			}
+
+			acceptType := r.Header.Get("Accept")
+			if acceptType != "" && !strings.HasPrefix(acceptType, "application/json") {
+				http.Error(w, "Accept-Encoding header must be application/json", http.StatusBadRequest)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+
+			next.ServeHTTP(w, r)
+		},
+	)
 }
 
 func LogRequestMiddleware(next http.Handler) http.Handler {

@@ -26,15 +26,16 @@ create index newsletters_owner_id_index
 create table users
 (
     id         uuid default gen_random_uuid() not null,
-    user_name  varchar(30)                    not null,
-    password   varchar(128)                   not null,
+    username   varchar(30)                    not null,
     first_name varchar(30)                    not null,
     last_name  varchar(30)                    not null,
     email      varchar(255)                   not null,
     constraint users_pk
         primary key (id),
     constraint users_pk_2
-        unique (user_name)
+        unique (username),
+    constraint users_pk_3
+        unique (email)
 );
 
 alter table users

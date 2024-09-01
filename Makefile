@@ -24,9 +24,9 @@ stop:
 clean:
 	rm -rf bin
 
-gen: api/api.yaml
-	rm -rf api/gen/*.gen.go
-	oapi-codegen --config=api/gen/config.yaml api/api.yaml
+gen: pkg/api
+	rm -rf pkg/api/gen/*.gen.go
+	oapi-codegen --config=config.yaml api.yaml
 
 # Testing targets
 test: gen

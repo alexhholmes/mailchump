@@ -8,20 +8,22 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/patrickmn/go-cache"
 
-	"mailchump/api/gen"
-	"mailchump/api/util"
-	"mailchump/model"
+	"mailchump/pkg/api/gen"
+	util2 "mailchump/pkg/api/util"
+	model2 "mailchump/pkg/model"
 )
 
 type NewsletterHandler struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cache.Cache
 }
 
 func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := r.Context().Value(util2.ContextLogger).(slog.Logger)
 
-	newsletters := model.Newsletters{}
+	newsletters := model2.Newsletters{}
 	err := newsletters.GetAll(r.Context(), h.db)
 	if err != nil {
 		log.Warn("Failed to get newsletters", "error", err)
@@ -33,7 +35,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user := r.Context().Value(util.ContextUser).(util.Key)
+	user := r.Context().Value(util2.ContextUser).(util2.Key)
 	response := gen.AllNewsletterResponse{
 		Count:       len(newsletters),
 		Newsletters: newsletters.ToResponse(user),
@@ -43,18 +45,18 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := r.Context().Value(util2.ContextLogger).(slog.Logger)
 
 	// TODO use newsletter request from gen
-	newsletter := model.Newsletter{}
+	newsletter := model2.Newsletter{}
 	err := json.NewDecoder(r.Body).Decode(&newsletter)
 	if err != nil {
 		log.Warn("Failed to decode request body", "error", err)
-		http.Error(w, util.ErrMalformedRequest.Error(), http.StatusBadRequest)
+		http.Error(w, util2.ErrMalformedRequest.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user := r.Context().Value(util.ContextUser)
+	user := r.Context().Value(util2.ContextUser)
 	newsletter.OwnerID, err = uuid.Parse(user.(string))
 	if err != nil {
 		log.Error("Failed to parse user id", "error", err)
@@ -67,7 +69,7 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err = newsletter.Create(r.Context(), h.db); err != nil {
-		if errors.Is(err, model.ErrAlreadyExists) {
+		if errors.Is(err, model2.ErrAlreadyExists) {
 			log.Info("Create newsletter; newsletter already exists", "error", err)
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
@@ -81,7 +83,7 @@ func (h *NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	response := newsletter.ToResponse(user.(util.Key))
+	response := newsletter.ToResponse(user.(util2.Key))
 	log.Info(
 		"Create newsletter",
 		"id", newsletter.Id,
@@ -97,19 +99,19 @@ func (h *NewsletterHandler) DeleteNewsletterById(
 	r *http.Request,
 	id string,
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := r.Context().Value(util2.ContextLogger).(slog.Logger)
 
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		log.Info("Failed to parse id", "error", err)
-		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
+		http.Error(w, util2.ErrInvalidUUID.Error(), http.StatusBadRequest)
 		return
 	}
-	newsletter := model.Newsletter{Id: parsed}
+	newsletter := model2.Newsletter{Id: parsed}
 
 	err = newsletter.Delete(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, model2.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -136,19 +138,19 @@ func (h *NewsletterHandler) GetNewsletterById(
 	r *http.Request,
 	id string,
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := r.Context().Value(util2.ContextLogger).(slog.Logger)
 
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		log.Info("Failed to parse id", "error", err)
-		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
+		http.Error(w, util2.ErrInvalidUUID.Error(), http.StatusBadRequest)
 		return
 	}
-	newsletter := model.Newsletter{Id: parsed}
+	newsletter := model2.Newsletter{Id: parsed}
 
 	err = newsletter.Get(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, model2.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -161,7 +163,7 @@ func (h *NewsletterHandler) GetNewsletterById(
 		)
 	}
 
-	user := r.Context().Value(util.ContextUser).(util.Key)
+	user := r.Context().Value(util2.ContextUser).(util2.Key)
 	response := newsletter.ToResponse(user)
 	log.Info("Get newsletter by id", "owner", response.Owner)
 	w.WriteHeader(http.StatusOK)
@@ -173,18 +175,18 @@ func (h *NewsletterHandler) HideNewsletter(
 	r *http.Request,
 	id string,
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := r.Context().Value(util2.ContextLogger).(slog.Logger)
 
 	parsed, err := uuid.Parse(id)
 	if err != nil {
 		log.Info("Failed to parse id", "error", err)
-		http.Error(w, util.ErrInvalidUUID.Error(), http.StatusBadRequest)
+		http.Error(w, util2.ErrInvalidUUID.Error(), http.StatusBadRequest)
 		return
 	}
-	newsletter := model.Newsletter{Id: parsed}
+	newsletter := model2.Newsletter{Id: parsed}
 
 	if ok, err := newsletter.IsOwner(r.Context(), h.db); err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, model2.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -200,17 +202,17 @@ func (h *NewsletterHandler) HideNewsletter(
 		log.Info(
 			"User is not the owner of the newsletter",
 			"newsletter", id,
-			"user", r.Context().Value(util.ContextUser),
+			"user", r.Context().Value(util2.ContextUser),
 			"owner", newsletter.OwnerID,
 		)
-		http.Error(w, util.ErrForbidden.Error(), http.StatusForbidden)
+		http.Error(w, util2.ErrForbidden.Error(), http.StatusForbidden)
 		return
 	}
 
 	// Check that the user is the newsletter owner
 	err = newsletter.GetOwnerID(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, model2.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -222,18 +224,18 @@ func (h *NewsletterHandler) HideNewsletter(
 			http.StatusInternalServerError,
 		)
 	}
-	user := r.Context().Value(util.ContextUser).(string)
+	user := r.Context().Value(util2.ContextUser).(string)
 	if user != newsletter.OwnerID.String() {
 		log.Info("User is not the owner of the newsletter",
 			"user", user,
 			"owner", newsletter.OwnerID,
 		)
-		http.Error(w, util.ErrForbidden.Error(), http.StatusForbidden)
+		http.Error(w, util2.ErrForbidden.Error(), http.StatusForbidden)
 	}
 
 	err = newsletter.Hide(r.Context(), h.db)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, model2.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)
 			http.Error(w, ErrNewsletterNotFound.Error(), http.StatusNotFound)
 			return
@@ -248,7 +250,7 @@ func (h *NewsletterHandler) HideNewsletter(
 
 	log.Info("Hide newsletter",
 		"id", id,
-		"user", r.Context().Value(util.ContextUser),
+		"user", r.Context().Value(util2.ContextUser),
 		"hidden", newsletter.Hidden,
 	)
 

@@ -3,5 +3,5 @@ package: gen
 generate:
   std-http-server: true
   models: true
-output: api/gen/api.gen.go
+output: pkg/api/gen/api.gen.go
 # ...
