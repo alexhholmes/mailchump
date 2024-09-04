@@ -25,11 +25,25 @@ var (
 
 type NewslettersTestSuite struct {
 	suite.Suite
-	ctx context.Context
+	ctx         context.Context
+	newsletters []model.Newsletter
 }
 
 func TestNewsletterTestSuite(t *testing.T) {
-	suite.Run(t, new(NewslettersTestSuite))
+	suite.Run(t, func() *NewslettersTestSuite {
+		s := &NewslettersTestSuite{
+			newsletters: make([]model.Newsletter, 0, 1000),
+		}
+
+		for i := 0; i < cap(s.newsletters); i++ {
+			s.newsletters = append(s.newsletters, model.Newsletter{
+				Id:      uuid.New(),
+				OwnerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+			})
+		}
+
+		return s
+	}())
 }
 
 func (s *NewslettersTestSuite) SetupTest() {
@@ -69,8 +83,8 @@ func (s *NewslettersTestSuite) TestGetAllNewsletters() {
 			exp: gen.AllNewsletterResponse{
 				Newsletters: []gen.NewsletterResponse{
 					{
-						Id:        "00000000-0000-0000-0000-000000000000",
-						Owner:     "00000000-0000-0000-0000-000000000000",
+						Id:        s.newsletters[0].Id.String(),
+						Owner:     s.newsletters[0].OwnerID.String(),
 						CreatedAt: time.Time{}.String(),
 						UpdatedAt: time.Time{}.String(),
 						Deleted:   &False,
@@ -81,12 +95,36 @@ func (s *NewslettersTestSuite) TestGetAllNewsletters() {
 			},
 			mock: func(m *MockNewsletterStore) *MockNewsletterStore {
 				m.EXPECT().GetAllNewsletters(s.ctx).
-					Return(model.Newsletters{
-						{
-							Id:      uuid.MustParse("00000000-0000-0000-0000-000000000000"),
-							OwnerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
-						},
-					}, nil)
+					Return(s.newsletters[0:1], nil)
+				return m
+			},
+		},
+		{
+			name: "multiple",
+			exp: gen.AllNewsletterResponse{
+				Newsletters: []gen.NewsletterResponse{
+					{
+						Id:        s.newsletters[0].Id.String(),
+						Owner:     s.newsletters[0].OwnerID.String(),
+						CreatedAt: time.Time{}.String(),
+						UpdatedAt: time.Time{}.String(),
+						Deleted:   &False,
+						Hidden:    &False,
+					},
+					{
+						Id:        s.newsletters[1].Id.String(),
+						Owner:     s.newsletters[1].OwnerID.String(),
+						CreatedAt: time.Time{}.String(),
+						UpdatedAt: time.Time{}.String(),
+						Deleted:   &False,
+						Hidden:    &False,
+					},
+				},
+				Count: 2,
+			},
+			mock: func(m *MockNewsletterStore) *MockNewsletterStore {
+				m.EXPECT().GetAllNewsletters(s.ctx).
+					Return(s.newsletters[0:2], nil)
 				return m
 			},
 		},
