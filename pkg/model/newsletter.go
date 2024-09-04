@@ -74,7 +74,7 @@ type Newsletters []Newsletter
 // parameter is used to determine if all fields should be shown (i.e. the user owns the
 // newsletter).
 func (n *Newsletters) ToResponse(user util.Key) []gen.NewsletterResponse {
-	resp := []gen.NewsletterResponse{}
+	resp := make([]gen.NewsletterResponse, 0, len(*n))
 	for _, newsletter := range *n {
 		resp = append(resp, newsletter.ToResponse(user))
 	}

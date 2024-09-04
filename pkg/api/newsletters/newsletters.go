@@ -45,9 +45,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	response := gen.AllNewsletterResponse{
-		Newsletters: []gen.NewsletterResponse{},
-	}
+	var response gen.AllNewsletterResponse
 	user, ok := r.Context().Value(util.ContextUser).(util.Key)
 	if !ok {
 		user = util.Key(uuid.Nil.String())
