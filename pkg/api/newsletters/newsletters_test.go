@@ -41,6 +41,7 @@ func (s *NewslettersTestSuite) TestGetAllNewsletters() {
 	t := s.T()
 
 	exp := gen.AllNewsletterResponse{
+		// We want an empty array not a nil value
 		Newsletters: []gen.NewsletterResponse{},
 		Count:       0,
 	}
