@@ -25,8 +25,8 @@ clean:
 	rm -rf bin
 
 gen: pkg/api
-	oapi-codegen --config=config.yaml api.yaml
-	mockery --config mockery.yaml
+	oapi-codegen --config=config/oapi-codegen.yaml config/api.yaml
+	mockery --config config/mockery.yaml
 
 # Testing targets
 test: gen
