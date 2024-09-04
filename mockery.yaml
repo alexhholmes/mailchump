@@ -1,0 +1,10 @@
+with-expecter: true
+mockname: "Mock{{.InterfaceName}}"
+filename: "{{.PackageName}}_mock.gen.go"
+dir: "{{.InterfaceDir}}"
+outpkg: "{{.PackageName}}"
+inpackage: True
+packages:
+  mailchump/pkg/api/newsletters:
+    interfaces:
+      NewsletterStore:

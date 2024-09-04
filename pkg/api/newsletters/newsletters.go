@@ -47,8 +47,12 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 
 	response := gen.AllNewsletterResponse{
 		Newsletters: []gen.NewsletterResponse{},
-	} // TODO fix users context
-	response.Newsletters = newsletters.ToResponse("00000000-0000-0000-0000-000000000000")
+	}
+	user, ok := r.Context().Value(util.ContextUser).(util.Key)
+	if !ok {
+		user = util.Key(uuid.Nil.String())
+	}
+	response.Newsletters = newsletters.ToResponse(user)
 	response.Count = len(response.Newsletters)
 
 	w.WriteHeader(http.StatusOK)
@@ -56,7 +60,6 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *NewsletterHandler) DeleteNewsletterById(
-
 	w http.ResponseWriter,
 	r *http.Request,
 	id string,
