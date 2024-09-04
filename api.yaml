@@ -28,55 +28,55 @@ paths:
                 $ref: '#/components/schemas/AllNewsletterResponse'
         '500':
           $ref: '#/components/responses/internal-error'
-    post:
-      operationId: CreateNewsletter
-      description: Create a newsletter (authors only)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - title
-                - description
-              properties:
-                title:
-                  type: string
-                  example: My Newsletter
-                description:
-                  type: string
-                  example: This is my newsletter
-                authors:
-                  type: array
-                  description: List of author UUIDs; default is the authenticated user, which is always included
-                  items:
-                    type: string
-                  example: [550e8400-e29b-41d4-a716-446655440000]
-      responses:
-        '200':
-          description: newsletter created
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - message
-                  - newsletter
-                properties:
-                  message:
-                    type: string
-                    example: newsletter created
-                  newsletter:
-                    $ref: '#/components/schemas/NewsletterResponse'
-        '400':
-          $ref: '#/components/responses/bad-request'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not-found'
-        '500':
-          $ref: '#/components/responses/internal-error'
+#    post:
+#      operationId: CreateNewsletter
+#      description: Create a newsletter (authors only)
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              required:
+#                - title
+#                - description
+#              properties:
+#                title:
+#                  type: string
+#                  example: My Newsletter
+#                description:
+#                  type: string
+#                  example: This is my newsletter
+#                authors:
+#                  type: array
+#                  description: List of author UUIDs; default is the authenticated user, which is always included
+#                  items:
+#                    type: string
+#                  example: [550e8400-e29b-41d4-a716-446655440000]
+#      responses:
+#        '200':
+#          description: newsletter created
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                required:
+#                  - message
+#                  - newsletter
+#                properties:
+#                  message:
+#                    type: string
+#                    example: newsletter created
+#                  newsletter:
+#                    $ref: '#/components/schemas/NewsletterResponse'
+#        '400':
+#          $ref: '#/components/responses/bad-request'
+#        '403':
+#          $ref: '#/components/responses/forbidden'
+#        '404':
+#          $ref: '#/components/responses/not-found'
+#        '500':
+#          $ref: '#/components/responses/internal-error'
   /newsletters/{id}:
     get:
       operationId: GetNewsletterById
@@ -197,6 +197,7 @@ components:
       type: object
       required:
         - count
+        - newsletters
       properties:
         count:
           type: integer

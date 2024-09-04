@@ -1,28 +1,3 @@
-create table newsletters
-(
-    id              uuid default gen_random_uuid()         not null,
-    owner_id        uuid                                   not null,
-    title           varchar(300)                           not null,
-    slug            varchar(300)                           not null,
-    description     varchar(900)                           not null,
-    created         timestamp with time zone default now() not null,
-    updated         timestamp with time zone default now() not null,
-    post_count      bigint                   default 0     not null,
-    hidden          boolean                  default false not null,
-    deleted         boolean                  default false not null,
-    recovery_window timestamp with time zone,
-    constraint newsletters_pk
-        primary key (id),
-    constraint newsletters_pk_2
-        unique (title)
-);
-
-alter table newsletters
-    owner to username;
-
-create index newsletters_owner_id_index
-    on newsletters (owner_id);
-
 create table users
 (
     id         uuid default gen_random_uuid() not null,
@@ -40,6 +15,36 @@ create table users
 
 alter table users
     owner to username;
+
+create table newsletters
+(
+    id              uuid default gen_random_uuid()         not null,
+    owner_id        uuid                                   not null,
+    title           varchar(300)                           not null,
+    slug            varchar(300)                           not null,
+    description     varchar(900)                           not null,
+    created         timestamp with time zone default now() not null,
+    updated         timestamp with time zone default now() not null,
+    post_count      bigint                   default 0     not null,
+    hidden          boolean                  default false not null,
+    deleted         boolean                  default false not null,
+    recovery_window timestamp with time zone,
+    constraint newsletters_pk
+        primary key (id),
+    constraint newsletters_pk_2
+        unique (title),
+    constraint newsletters_users_id_fk
+        foreign key (owner_id) references users
+);
+
+alter table newsletters
+    owner to username;
+
+create index newsletters_owner_id_index
+    on newsletters (owner_id);
+
+create index users_username_index
+    on newsletters (owner_id);
 
 create table posts
 (

@@ -14,13 +14,8 @@ import (
 
 // AllNewsletterResponse defines model for AllNewsletterResponse.
 type AllNewsletterResponse struct {
-	Count       int                   `json:"count"`
-	Newsletters *[]NewsletterResponse `json:"newsletters,omitempty"`
-}
-
-// BadRequest defines model for BadRequest.
-type BadRequest struct {
-	Message string `json:"message"`
+	Count       int                  `json:"count"`
+	Newsletters []NewsletterResponse `json:"newsletters"`
 }
 
 // Forbidden defines model for Forbidden.
@@ -66,17 +61,6 @@ type StatusResponse struct {
 // InternalError defines model for internal-error.
 type InternalError = InternalServerError
 
-// CreateNewsletterJSONBody defines parameters for CreateNewsletter.
-type CreateNewsletterJSONBody struct {
-	// Authors List of author UUIDs; default is the authenticated user, which is always included
-	Authors     *[]string `json:"authors,omitempty"`
-	Description string    `json:"description"`
-	Title       string    `json:"title"`
-}
-
-// CreateNewsletterJSONRequestBody defines body for CreateNewsletter for application/json ContentType.
-type CreateNewsletterJSONRequestBody CreateNewsletterJSONBody
-
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -85,9 +69,6 @@ type ServerInterface interface {
 
 	// (GET /newsletters)
 	GetNewsletters(w http.ResponseWriter, r *http.Request)
-
-	// (POST /newsletters)
-	CreateNewsletter(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /newsletters/{id})
 	DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string)
@@ -129,21 +110,6 @@ func (siw *ServerInterfaceWrapper) GetNewsletters(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetNewsletters(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// CreateNewsletter operation middleware
-func (siw *ServerInterfaceWrapper) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateNewsletter(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -347,7 +313,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/healthcheck", wrapper.GetHealthcheck)
 	m.HandleFunc("GET "+options.BaseURL+"/newsletters", wrapper.GetNewsletters)
-	m.HandleFunc("POST "+options.BaseURL+"/newsletters", wrapper.CreateNewsletter)
 	m.HandleFunc("DELETE "+options.BaseURL+"/newsletters/{id}", wrapper.DeleteNewsletterById)
 	m.HandleFunc("GET "+options.BaseURL+"/newsletters/{id}", wrapper.GetNewsletterById)
 	m.HandleFunc("PATCH "+options.BaseURL+"/newsletters/{id}/hide", wrapper.HideNewsletter)

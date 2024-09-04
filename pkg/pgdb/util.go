@@ -3,6 +3,7 @@ package pgdb
 import (
 	"database/sql"
 	"errors"
+	"io"
 	"log"
 	"log/slog"
 	"os"
@@ -18,8 +19,8 @@ type scan interface {
 	Scan(dest ...any) error
 }
 
-// MapStruct uses reflection to map the columns of a sql.Rows to a generic
-// struct.
+// MapStruct uses reflection to map all the columns of a sql.Rows to the
+// struct T.
 func MapStruct[T any, R scan](row R) (T, error) {
 	var fields T
 
@@ -84,11 +85,11 @@ func InitializeLocalDB() {
 		log.Fatalf("MIGRATIONS_DIR environment variable not set")
 	}
 
-	db, err := Init()
+	db, err := NewClient()
 	if err != nil {
 		log.Fatalf("Could not make db connection for dev environment initialization: %s", err.Error())
 	}
-	defer func(db *sql.DB) {
+	defer func(db io.Closer) {
 		_ = db.Close()
 	}(db)
 
@@ -107,7 +108,7 @@ func InitializeLocalDB() {
 
 	// Execute the SQL migrations to postgres
 	for _, query := range files {
-		_, err := db.Exec(query)
+		_, err = db.db.Exec(query)
 		if err != nil {
 			log.Fatalf("Could not execute migration: %s", err.Error())
 		}

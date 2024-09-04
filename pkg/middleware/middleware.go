@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"database/sql"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,7 +10,7 @@ import (
 	"mailchump/pkg/api/util"
 )
 
-func CreateAuthMiddleware(db *sql.DB) func(next http.Handler) http.Handler {
+func CreateAuthMiddleware() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -37,12 +36,6 @@ func HeadersMiddleware(next http.Handler) http.Handler {
 			contentType := strings.ToLower(r.Header.Get("Content-Type"))
 			if contentType != "" && !strings.HasPrefix(contentType, "application/json") {
 				http.Error(w, "Content-Type header must be application/json", http.StatusBadRequest)
-				return
-			}
-
-			acceptType := r.Header.Get("Accept")
-			if acceptType != "" && !strings.HasPrefix(acceptType, "application/json") {
-				http.Error(w, "Accept-Encoding header must be application/json", http.StatusBadRequest)
 				return
 			}
 
@@ -89,7 +82,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 						log = slog.Default()
 					}
 
-					log.Info("Recovered from panic: %v", err)
+					log.Error("Recovered from panic", "error", err)
 					http.Error(
 						w,
 						http.StatusText(http.StatusInternalServerError),

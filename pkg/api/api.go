@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
@@ -14,7 +13,6 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/patrickmn/go-cache"
 
 	"mailchump/pkg/api/gen"
 	"mailchump/pkg/api/healthcheck"
@@ -49,7 +47,7 @@ func Run() error {
 				middleware.RecoveryMiddleware,
 				middleware.LogRequestMiddleware,
 				middleware.HeadersMiddleware,
-				middleware.CreateAuthMiddleware(server.db),
+				middleware.CreateAuthMiddleware(),
 			},
 		},
 	)
@@ -89,28 +87,23 @@ var _ gen.ServerInterface = (*Handler)(nil)
 // Handler is a composition of the endpoint handlers. This allows the individuals handlers
 // to share the same resources, such as the database connection.
 type Handler struct {
-	db    *sql.DB
-	cache *cache.Cache
 	newsletters.NewsletterHandler
 	healthcheck.HealthHandler
 }
 
 // NewHandler creates a new Handler instance, initializing the database connection.
 func NewHandler() (h Handler, close func(), err error) {
-	db, err := pgdb.Init()
+	db, err := pgdb.NewClient()
 	if err != nil {
-		return Handler{}, nil, fmt.Errorf("failed to open a DB connection: %w", err)
+		return Handler{}, nil, fmt.Errorf("failed to open a db connection: %w", err)
 	}
 
 	return Handler{
-			db:    db,
-			cache: cache.New(10*time.Second, 1*time.Second),
+			NewsletterHandler: newsletters.NewsletterHandler{DB: db},
 		}, func() {
-			if db != nil {
-				err = db.Close()
-				if err != nil {
-					log.Fatalf("failed to close DB connection: %s", err.Error())
-				}
+			err = db.Close()
+			if err != nil {
+				log.Fatalf("failed to close db connection: %s", err.Error())
 			}
 		}, nil
 }
