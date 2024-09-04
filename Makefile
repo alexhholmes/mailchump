@@ -29,15 +29,21 @@ gen: pkg/api
 	mockery --config config/mockery.yaml
 
 # Testing targets
+.PHONY: test-cov-out
 test: gen
 	go test ./...
 
+.PHONY: test-cov-out
 test-verbose: gen
 	go test -v ./...
 
+.PHONY: test-cov-out
 test-cov: gen
 	go test -cover ./...
 
-test-cov-out: test-coverage
+.PHONY: test-cov-out
+test-cov-out: gen clean
+	go test -coverprofile=coverage.out ./...
+	cat coverage.out | grep -v '\.gen\.go' > temp.out && mv temp.out coverage.out
 	go tool cover -html=coverage.out
 
