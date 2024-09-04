@@ -22,7 +22,7 @@ stop:
 
 # Util targets
 clean:
-	rm -rf bin
+	rm -rf bin coverage.out
 
 gen: pkg/api
 	oapi-codegen --config=config/oapi-codegen.yaml config/api.yaml
@@ -35,9 +35,9 @@ test: gen
 test-verbose: gen
 	go test -v ./...
 
-test-coverage: gen
-	go test -coverprofile=coverage.out ./...
+test-cov: gen
+	go test -cover ./...
 
-test-coverage-html: test-coverage
+test-cov-out: test-coverage
 	go tool cover -html=coverage.out
 
