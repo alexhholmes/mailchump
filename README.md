@@ -10,20 +10,28 @@ _Why use big import when small import work good?_
 
 A list of packages used (from `go.mod`):
 ```text
-github.com/cucumber/godog       # Integration testing
 github.com/lib/pq               # PostgresDB driver for database/sql
 github.com/google/uuid          # IDs for database primary keys
 github.com/oapi-codegen/runtime # Open API 3 http server codegen
 github.com/redis/go-redis       # Caching
-github.com/stretchr/testify     # Testing; specifically for the assertions package
+github.com/stretchr/testify     # Testing
 ```
 
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
 
 ## Project Setup
 Codegen from OpenAPI spec (needed for IDE indexing support):
-```
+```shell
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+```
+
+Codegen for testing mocks:
+```shell
+brew install mockery
+
+# or (not recommended)
+
+go install github.com/vektra/mockery/v2@latest
 ```
 
 ## Project Structure
