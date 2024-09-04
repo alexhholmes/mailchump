@@ -206,6 +206,7 @@ components:
         newsletters:
           type: array
           default: []
+          nullable: false
           items:
             $ref: '#/components/schemas/NewsletterResponse'
     NewsletterResponse:

@@ -3,6 +3,7 @@ package newsletters
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http/httptest"
 	"testing"
 
@@ -29,15 +30,17 @@ func (s *NewslettersTestSuite) SetupTest() {
 		util.ContextUser,
 		"00000000-0000-0000-0000-000000000000",
 	)
+	s.ctx = context.WithValue(
+		s.ctx,
+		util.ContextLogger,
+		slog.Default(),
+	)
 }
 
-func (s *NewslettersTestSuite) TestGetAllNewsletters(t *testing.T) {
-	type body struct {
-		Newsletters []gen.NewsletterResponse
-		Count       int
-	}
+func (s *NewslettersTestSuite) TestGetAllNewsletters() {
+	t := s.T()
 
-	exp := body{
+	exp := gen.AllNewsletterResponse{
 		Newsletters: []gen.NewsletterResponse{},
 		Count:       0,
 	}
@@ -51,7 +54,7 @@ func (s *NewslettersTestSuite) TestGetAllNewsletters(t *testing.T) {
 	h := NewsletterHandler{DB: m}
 	h.GetNewsletters(resp, req)
 
-	var out body
+	var out gen.AllNewsletterResponse
 	assert.Equal(t, 200, resp.Code)
 	assert.NoError(t, json.NewDecoder(resp.Body).Decode(&out))
 	assert.Equal(t, exp, out)
