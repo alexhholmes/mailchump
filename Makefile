@@ -25,8 +25,8 @@ clean:
 	rm -rf bin
 
 gen: pkg/api
-	rm -rf pkg/api/gen/*.gen.go
 	oapi-codegen --config=config.yaml api.yaml
+	mockery --config mockery.yaml
 
 # Testing targets
 test: gen
