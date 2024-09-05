@@ -11,9 +11,7 @@ FROM ubuntu AS dev
 RUN apt-get update && apt-get install -y postgresql-client
 WORKDIR /app
 COPY --from=builder /app/migrations/ migrations/
-COPY --from=builder /app/scripts/wait-for-postgres.sh wait-for-postgres.sh
-COPY --from=builder /app/config/app.yaml config/app.yaml
-COPY --from=builder /app/bin/mailchump mailchump
+COPY --from=builder /app/scripts/wait-for-postgres.sh /app/config/app.yaml /app/bin/mailchump ./
 EXPOSE 8080 6060
 ENTRYPOINT ["./mailchump"]
 

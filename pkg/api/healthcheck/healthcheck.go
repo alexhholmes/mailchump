@@ -13,7 +13,7 @@ type HealthHandler struct{}
 
 // GetHealthcheck returns HTTP status 200.
 // GET /ping
-func (h *HealthHandler) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
+func (h HealthHandler) GetHealthcheck(w http.ResponseWriter, r *http.Request) {
 	r.Context().Value(util.ContextLogger).(*slog.Logger).Info("Healthcheck")
 	resp := gen.HealthCheck{
 		Status: "ok",
