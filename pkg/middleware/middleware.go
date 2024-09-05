@@ -20,7 +20,7 @@ func CreateAuthMiddleware() func(next http.Handler) http.Handler {
 
 				env := strings.ToLower(os.Getenv("ENV"))
 				if env == "local" || env == "dev" {
-					ctx := context.WithValue(r.Context(), util.ContextUser, "00000000-0000-0000-0000-000000000000")
+					ctx := context.WithValue(r.Context(), util.ContextUser, util.Key("00000000-0000-0000-0000-000000000000"))
 					next.ServeHTTP(w, r.WithContext(ctx))
 				}
 

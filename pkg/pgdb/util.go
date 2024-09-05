@@ -21,7 +21,7 @@ type scan interface {
 
 // MapStruct uses reflection to map all the columns of a sql.Rows to the
 // struct T.
-func MapStruct[T any, R scan](row R) (T, error) {
+func MapStruct[T any, R scan](row R, table string) (T, error) {
 	var fields T
 
 	if &row == nil {
@@ -29,14 +29,22 @@ func MapStruct[T any, R scan](row R) (T, error) {
 	}
 
 	val := reflect.ValueOf(&fields).Elem()
-	numCols := val.NumField()
-	columns := make([]interface{}, numCols)
-	for i := 0; i < numCols; i++ {
-		columns[i] = val.
-			Field(i).
-			Addr().
-			Interface()
+	columns := make([]interface{}, val.NumField())
+	ptr := 0
+
+	// Only scan the columns that are tagged with the table name
+	for i := 0; i < val.NumField(); i++ {
+		field := reflect.TypeOf(fields).Field(i)
+		if field.Tag.Get("table") == table {
+			columns[ptr] = val.
+				Field(i).
+				Addr().
+				Interface()
+			ptr++
+		}
 	}
+
+	columns = columns[:ptr]
 
 	err := row.Scan(columns...)
 	if err != nil {

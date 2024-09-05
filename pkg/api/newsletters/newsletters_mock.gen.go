@@ -245,9 +245,9 @@ func (_c *MockNewsletterStore_GetNewsletterOwnerID_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// HideNewsletter provides a mock function with given fields: ctx, id
-func (_m *MockNewsletterStore) HideNewsletter(ctx context.Context, id string) (bool, error) {
-	ret := _m.Called(ctx, id)
+// HideNewsletter provides a mock function with given fields: ctx, id, owner
+func (_m *MockNewsletterStore) HideNewsletter(ctx context.Context, id string, owner string) (bool, error) {
+	ret := _m.Called(ctx, id, owner)
 
 	if len(ret) == 0 {
 		panic("no return value specified for HideNewsletter")
@@ -255,17 +255,17 @@ func (_m *MockNewsletterStore) HideNewsletter(ctx context.Context, id string) (b
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
-		return rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (bool, error)); ok {
+		return rf(ctx, id, owner)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) bool); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
+		r0 = rf(ctx, id, owner)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, id, owner)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -281,13 +281,14 @@ type MockNewsletterStore_HideNewsletter_Call struct {
 // HideNewsletter is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockNewsletterStore_Expecter) HideNewsletter(ctx interface{}, id interface{}) *MockNewsletterStore_HideNewsletter_Call {
-	return &MockNewsletterStore_HideNewsletter_Call{Call: _e.mock.On("HideNewsletter", ctx, id)}
+//   - owner string
+func (_e *MockNewsletterStore_Expecter) HideNewsletter(ctx interface{}, id interface{}, owner interface{}) *MockNewsletterStore_HideNewsletter_Call {
+	return &MockNewsletterStore_HideNewsletter_Call{Call: _e.mock.On("HideNewsletter", ctx, id, owner)}
 }
 
-func (_c *MockNewsletterStore_HideNewsletter_Call) Run(run func(ctx context.Context, id string)) *MockNewsletterStore_HideNewsletter_Call {
+func (_c *MockNewsletterStore_HideNewsletter_Call) Run(run func(ctx context.Context, id string, owner string)) *MockNewsletterStore_HideNewsletter_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -297,7 +298,7 @@ func (_c *MockNewsletterStore_HideNewsletter_Call) Return(isHidden bool, err err
 	return _c
 }
 
-func (_c *MockNewsletterStore_HideNewsletter_Call) RunAndReturn(run func(context.Context, string) (bool, error)) *MockNewsletterStore_HideNewsletter_Call {
+func (_c *MockNewsletterStore_HideNewsletter_Call) RunAndReturn(run func(context.Context, string, string) (bool, error)) *MockNewsletterStore_HideNewsletter_Call {
 	_c.Call.Return(run)
 	return _c
 }

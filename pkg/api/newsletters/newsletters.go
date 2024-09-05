@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -22,7 +21,7 @@ type NewsletterStore interface {
 	GetNewsletterById(ctx context.Context, id string) (model.Newsletter, error)
 	GetNewsletterOwnerID(ctx context.Context, id string) (uuid.UUID, error)
 	DeleteNewsletter(ctx context.Context, id string) error
-	HideNewsletter(ctx context.Context, id string) (isHidden bool, err error)
+	HideNewsletter(ctx context.Context, id, owner string) (isHidden bool, err error)
 }
 
 var _ NewsletterStore = &pgdb.Client{}
@@ -32,7 +31,7 @@ type NewsletterHandler struct {
 }
 
 func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
-	log := r.Context().Value(util.ContextLogger).(*slog.Logger)
+	log := util.GetLogger(r.Context())
 
 	newsletters, err := h.DB.GetAllNewsletters(r.Context())
 	if err != nil {
@@ -46,10 +45,7 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 	}
 
 	var response gen.AllNewsletterResponse
-	user, ok := r.Context().Value(util.ContextUser).(util.Key)
-	if !ok {
-		user = util.Key(uuid.Nil.String())
-	}
+	user := util.GetUserString(r.Context())
 	response.Newsletters = newsletters.ToResponse(user)
 	response.Count = len(response.Newsletters)
 
@@ -63,7 +59,7 @@ func (h *NewsletterHandler) DeleteNewsletterById(
 	id string,
 
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := util.GetLogger(r.Context())
 
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -101,7 +97,7 @@ func (h *NewsletterHandler) GetNewsletterById(
 	r *http.Request,
 	id string,
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := util.GetLogger(r.Context())
 
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -125,7 +121,7 @@ func (h *NewsletterHandler) GetNewsletterById(
 		)
 	}
 
-	user := r.Context().Value(util.ContextUser).(util.Key)
+	user := util.GetUserString(r.Context())
 	response := newsletter.ToResponse(user)
 	log.Info("Get newsletter by id", "owner", response.Owner)
 	w.WriteHeader(http.StatusOK)
@@ -137,7 +133,7 @@ func (h *NewsletterHandler) HideNewsletter(
 	r *http.Request,
 	id string,
 ) {
-	log := r.Context().Value(util.ContextLogger).(slog.Logger)
+	log := util.GetLogger(r.Context())
 
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -161,7 +157,8 @@ func (h *NewsletterHandler) HideNewsletter(
 			http.StatusInternalServerError,
 		)
 	}
-	user := r.Context().Value(util.ContextUser).(string)
+
+	user := util.GetUserString(r.Context())
 	if user != owner.String() {
 		log.Info("User is not the owner of the newsletter",
 			"user", user,
@@ -170,7 +167,9 @@ func (h *NewsletterHandler) HideNewsletter(
 		http.Error(w, util.ErrForbidden.Error(), http.StatusForbidden)
 	}
 
-	isHidden, err := h.DB.HideNewsletter(r.Context(), id)
+	// This query still has an additional check to ensure the newsletter does
+	// not switch ownership.
+	isHidden, err := h.DB.HideNewsletter(r.Context(), id, user)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			log.Info("Newsletter not found", "error", err)

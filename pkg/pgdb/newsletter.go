@@ -30,7 +30,7 @@ func (c *Client) GetAllNewsletters(ctx context.Context) (model.Newsletters, erro
 
 	var n []model.Newsletter
 	for rows.Next() {
-		newsletter, _ := MapStruct[model.Newsletter](rows)
+		newsletter, _ := MapStruct[model.Newsletter](rows, "newsletters")
 		n = append(n, newsletter)
 	}
 
@@ -49,7 +49,7 @@ func (c *Client) GetNewsletterById(
 		id,
 	)
 
-	newsletter, err := MapStruct[model.Newsletter](row)
+	newsletter, err := MapStruct[model.Newsletter](row, "newsletters")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return model.Newsletter{}, model.ErrNotFound
@@ -166,7 +166,7 @@ func (c *Client) DeleteNewsletter(ctx context.Context, id string) error {
 
 // HideNewsletter changes the hidden field of a Newsletter to the opposite of
 // its current value.
-func (c *Client) HideNewsletter(ctx context.Context, id string) (
+func (c *Client) HideNewsletter(ctx context.Context, id, owner string) (
 	isHidden bool,
 	err error,
 ) {
@@ -174,9 +174,9 @@ func (c *Client) HideNewsletter(ctx context.Context, id string) (
 	res, err := c.db.QueryContext(ctx,
 		`UPDATE newsletters
 		SET hidden = NOT hidden
-		WHERE id = $1
+		WHERE id = $1 AND owner_id = $2
 		RETURNING hidden`,
-		id,
+		id, owner,
 	)
 	if err != nil {
 		return false, err

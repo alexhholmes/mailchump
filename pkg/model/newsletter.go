@@ -11,18 +11,18 @@ import (
 )
 
 type Newsletter struct {
-	Id             uuid.UUID   `json:"id"`
-	OwnerID        uuid.UUID   `json:"owner_id"`
-	AuthorIDs      []uuid.UUID `json:"author_ids"`
-	Title          string      `json:"title"`
-	Slug           string      `json:"slug"`
-	Description    string      `json:"description"`
-	Created        time.Time   `json:"created"`
-	Updated        time.Time   `json:"updated"`
-	PostCount      int         `json:"post_count"`
-	Hidden         bool        `json:"hidden"`
-	Deleted        bool        `json:"deleted"`
-	RecoveryWindow time.Time   `json:"recovery_window"`
+	Id             uuid.UUID   `json:"id" table:"newsletters"`
+	OwnerID        uuid.UUID   `json:"owner_id" table:"newsletters"`
+	AuthorIDs      []uuid.UUID `json:"author_ids" table:"authors"`
+	Title          string      `json:"title" table:"newsletters"`
+	Slug           string      `json:"slug" table:"newsletters"`
+	Description    string      `json:"description" table:"newsletters"`
+	Created        time.Time   `json:"created" table:"newsletters"`
+	Updated        time.Time   `json:"updated" table:"newsletters"`
+	PostCount      int         `json:"post_count" table:"newsletters"`
+	Hidden         bool        `json:"hidden" table:"newsletters"`
+	Deleted        bool        `json:"deleted" table:"newsletters"`
+	RecoveryWindow time.Time   `json:"recovery_window" table:"newsletters"`
 }
 
 // Validate performs runtime checks on Newsletter fields.
@@ -33,7 +33,7 @@ func (n *Newsletter) Validate() error {
 
 // ToResponse converts a Newsletter to a gen.NewsletterResponse. This will hide the
 // following fields if the user is not the owner: Hidden and Deleted.
-func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
+func (n *Newsletter) ToResponse(user string) gen.NewsletterResponse {
 	resp := gen.NewsletterResponse{
 		Authors: func() []string {
 			var authors []string
@@ -54,7 +54,7 @@ func (n *Newsletter) ToResponse(user util.Key) gen.NewsletterResponse {
 		UpdatedAt:   n.Updated.String(),
 	}
 	// Hide fields if the user is not an owner
-	if user.String() == n.OwnerID.String() {
+	if user == n.OwnerID.String() {
 		resp.Hidden = &n.Hidden
 		resp.Deleted = &n.Deleted
 	}
@@ -73,7 +73,7 @@ type Newsletters []Newsletter
 // ToResponse converts a slice of Newsletters to a slice of NewsletterResponse. The user
 // parameter is used to determine if all fields should be shown (i.e. the user owns the
 // newsletter).
-func (n *Newsletters) ToResponse(user util.Key) []gen.NewsletterResponse {
+func (n *Newsletters) ToResponse(user string) []gen.NewsletterResponse {
 	resp := make([]gen.NewsletterResponse, 0, len(*n))
 	for _, newsletter := range *n {
 		resp = append(resp, newsletter.ToResponse(user))

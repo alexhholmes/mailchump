@@ -27,7 +27,9 @@ func Run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	env := strings.ToLower(os.Getenv("ENVIRONMENT"))
 	if env == "local" || env == "dev" {
-		logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
 	}
 	slog.SetDefault(logger)
 

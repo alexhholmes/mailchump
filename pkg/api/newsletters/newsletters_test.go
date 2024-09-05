@@ -36,10 +36,17 @@ func TestNewsletterTestSuite(t *testing.T) {
 		}
 
 		for i := 0; i < cap(s.newsletters); i++ {
-			s.newsletters = append(s.newsletters, model.Newsletter{
-				Id:      uuid.New(),
-				OwnerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
-			})
+			if i%2 == 0 {
+				s.newsletters = append(s.newsletters, model.Newsletter{
+					Id:      uuid.New(),
+					OwnerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+				})
+			} else {
+				s.newsletters = append(s.newsletters, model.Newsletter{
+					Id:      uuid.New(),
+					OwnerID: uuid.New(),
+				})
+			}
 		}
 
 		return s
@@ -116,8 +123,8 @@ func (s *NewslettersTestSuite) TestGetAllNewsletters() {
 						Owner:     s.newsletters[1].OwnerID.String(),
 						CreatedAt: time.Time{}.String(),
 						UpdatedAt: time.Time{}.String(),
-						Deleted:   &False,
-						Hidden:    &False,
+						Deleted:   nil,
+						Hidden:    nil,
 					},
 				},
 				Count: 2,

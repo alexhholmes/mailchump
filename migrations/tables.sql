@@ -28,7 +28,7 @@ create table newsletters
     post_count      bigint                   default 0     not null,
     hidden          boolean                  default false not null,
     deleted         boolean                  default false not null,
-    recovery_window timestamp with time zone,
+    recovery_window timestamp with time zone default now() not null,
     constraint newsletters_pk
         primary key (id),
     constraint newsletters_pk_2
