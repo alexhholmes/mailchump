@@ -30,6 +30,9 @@ type NewsletterHandler struct {
 	DB NewsletterStore
 }
 
+// GetNewsletters fetches all newsletters from the database and returns them as
+// a gen.AllNewsletterResponse. This will hide the `hidden` and `deleted` fields
+// if the user is not the owner of the newsletter.
 func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request) {
 	log := util.GetLogger(r.Context())
 
@@ -53,6 +56,9 @@ func (h *NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Reques
 	_ = json.NewEncoder(w).Encode(response)
 }
 
+// DeleteNewsletterById deletes a newsletter by its id. This will perform a
+// soft delete on the newsletter with a recovery window and a no-op if it is
+// already deleted.
 func (h *NewsletterHandler) DeleteNewsletterById(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -92,6 +98,9 @@ func (h *NewsletterHandler) DeleteNewsletterById(
 	)
 }
 
+// GetNewsletterById fetches a newsletter by its id and returns it as a
+// gen.NewsletterResponse. This will hide the `hidden` and `deleted` fields if
+// the user is not the owner of the newsletter.
 func (h *NewsletterHandler) GetNewsletterById(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -128,6 +137,8 @@ func (h *NewsletterHandler) GetNewsletterById(
 	_ = json.NewEncoder(w).Encode(response)
 }
 
+// HideNewsletter hides a newsletter by its id. This will set the `hidden` field
+// to the opposite value.
 func (h *NewsletterHandler) HideNewsletter(
 	w http.ResponseWriter,
 	r *http.Request,
