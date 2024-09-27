@@ -3,9 +3,11 @@ RUN --mount=type=cache,target=/var/cache/oapi-codegen \
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 RUN --mount=type=cache,target=/var/cache/mockery \
     go install github.com/vektra/mockery/v2@latest
+RUN --mount=type=cache,target=/var/cache/task \
+    go install github.com/go-task/task/v3/cmd/task@latest
 WORKDIR /app
 COPY ./ ./
-RUN make build-docker
+RUN task build-docker
 
 FROM ubuntu AS dev
 RUN apt-get update && apt-get install -y postgresql-client
