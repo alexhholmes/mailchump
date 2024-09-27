@@ -1,0 +1,65 @@
+version: '3'
+
+tasks:
+  build:
+    deps: [gen]
+    cmds:
+      - go build -mod=mod -o bin/mailchump cmd/main.go
+
+  build-docker:
+    deps: [gen]
+    cmds:
+      - CGO_ENABLED=0 GOOS=linux go build -mod=mod -o bin/mailchump cmd/main.go
+
+  package:
+    cmds:
+      - docker build --target prod --tag mailchump:latest .
+
+  package-dev:
+    cmds:
+      - docker build --target dev --tag mailchump:dev .
+
+  run:
+    deps: [package, stop]
+    cmds:
+      - docker compose up --force-recreate
+
+  run-db:
+    deps: [package-dev, stop]
+    cmds:
+      - INIT_ONLY=true docker compose up -d --force-recreate
+
+  stop:
+    cmds:
+      - docker compose down
+
+  clean:
+    cmds:
+      - rm -rf bin coverage.out
+
+  gen:
+    cmds:
+      - oapi-codegen --config=config/oapi-codegen.yaml config/api.yaml
+      - mockery --config=config/mockery.yaml
+
+  test:
+    deps: [gen]
+    cmds:
+      - go test ./...
+
+  test-verbose:
+    deps: [gen]
+    cmds:
+      - go test -v ./...
+
+  test-cov:
+    deps: [gen]
+    cmds:
+      - go test -cover ./...
+
+  test-cov-out:
+    deps: [gen, clean]
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - cat coverage.out | grep -v '\.gen\.go' > temp.out && mv temp.out coverage.out
+      - go tool cover -html=coverage.out
