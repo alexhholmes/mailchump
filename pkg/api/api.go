@@ -15,14 +15,15 @@ import (
 // Check that the Handler implements the generated API interface
 var _ gen.ServerInterface = (*Handler)(nil)
 
-// Handler is a composition of the endpoint handlers. This allows the individuals handlers
-// to share the same resources, such as the database connection.
+// Handler is a composition of the endpoint handlers. This allows the individual
+// handlers to share the same resources, such as the database connection.
 type Handler struct {
 	newsletters.NewsletterHandler
 	healthcheck.HealthHandler
 }
 
-// NewHandler creates a new Handler instance, initializing the database connection.
+// NewHandler creates a new Handler instance, initializing the database
+// connection.
 func NewHandler() (h Handler, close func(), err error) {
 	db, err := pgdb.NewClient()
 	if err != nil {

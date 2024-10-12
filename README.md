@@ -19,6 +19,9 @@ github.com/redis/go-redis       # Caching
 github.com/stretchr/testify     # Testing
 ```
 
+GoAT (Golang, AlpineJS, TailwindCSS) and GoTH (Golang, Templ, HTMX) stack are in.
+
+
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
 
 ## Project Setup
