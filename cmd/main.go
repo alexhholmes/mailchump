@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"mailchump/pkg/api"
 	"mailchump/pkg/pgdb"
+	"mailchump/pkg/routes"
 )
 
 // init initializes the pgdb tables and adds test data. This is for local testing purposes
@@ -45,7 +45,7 @@ func main() {
 		}()
 	}
 
-	err := api.Run()
+	err := routes.Run()
 	if err != nil {
 		os.Exit(1)
 	}
