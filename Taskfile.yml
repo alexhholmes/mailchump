@@ -40,6 +40,7 @@ tasks:
   gen:
     cmds:
       - oapi-codegen --config=config/oapi-codegen.yaml config/api.yaml
+      - templ generate
       - mockery --config=config/mockery.yaml
 
   test:
