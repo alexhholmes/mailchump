@@ -16,6 +16,7 @@ import (
 	"mailchump/pkg/api"
 	"mailchump/pkg/api/gen"
 	"mailchump/pkg/middleware"
+	"mailchump/pkg/routes/tmpl"
 )
 
 // Run starts the server, initializing the logger and a handler instance that will be
@@ -36,6 +37,16 @@ func Run() error {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "templates/index.html")
+	})
+	baseRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "text/html")
+
+		component := tmpl.Hello("world")
+		err := component.Render(r.Context(), w)
+		if err != nil {
+			slog.Error("Failed to render component", "error", err)
+		}
 	})
 
 	// Initialize the API server, this creates the DB connection and other
