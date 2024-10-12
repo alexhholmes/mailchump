@@ -20,7 +20,7 @@ tasks:
       - docker build --target dev --tag mailchump:dev .
 
   run:
-    deps: [package, stop]
+    deps: [package-dev, stop]
     cmds:
       - docker compose up --force-recreate
 

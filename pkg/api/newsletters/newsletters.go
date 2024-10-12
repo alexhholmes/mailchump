@@ -20,6 +20,7 @@ type NewsletterStore interface {
 	GetAllNewsletters(ctx context.Context) (model.Newsletters, error)
 	GetNewsletterById(ctx context.Context, id string) (model.Newsletter, error)
 	GetNewsletterOwnerID(ctx context.Context, id string) (uuid.UUID, error)
+	CreateNewsletter(ctx context.Context, n model.Newsletter) error
 	DeleteNewsletter(ctx context.Context, id string) error
 	HideNewsletter(ctx context.Context, id, owner string) (isHidden bool, err error)
 }
@@ -53,7 +54,50 @@ func (h NewsletterHandler) GetNewsletters(w http.ResponseWriter, r *http.Request
 	response.Count = len(response.Newsletters)
 
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
+}
+
+func (h NewsletterHandler) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
+	log := util.GetLogger(r.Context())
+
+	var req gen.CreateNewsletterRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		log.Info("Failed to decode request", "error", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if req.Title == "" {
+		log.Info("Title is empty")
+		http.Error(w, "title is empty", http.StatusBadRequest)
+		return
+	}
+	if req.Description == "" {
+		log.Info("Description is empty")
+		http.Error(w, "description is empty", http.StatusBadRequest)
+		return
+	}
+
+	err = h.DB.CreateNewsletter(r.Context(),
+		model.Newsletter{
+			Title:       req.Title,
+			Description: req.Description,
+		},
+	)
+	if err != nil {
+		log.Warn("Failed to create newsletter", "error", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotImplemented)
+	w.Header().Set("Content-Type", "application/json")
+	// _ = json.NewEncoder(w).Encode()
 }
 
 // DeleteNewsletterById deletes a newsletter by its id. This will perform a
@@ -63,7 +107,6 @@ func (h NewsletterHandler) DeleteNewsletterById(
 	w http.ResponseWriter,
 	r *http.Request,
 	id string,
-
 ) {
 	log := util.GetLogger(r.Context())
 
@@ -91,6 +134,7 @@ func (h NewsletterHandler) DeleteNewsletterById(
 
 	log.Info("Delete newsletter", "id", id)
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(
 		gen.StatusResponse{
 			Status: "newsletter deleted",
@@ -134,6 +178,7 @@ func (h NewsletterHandler) GetNewsletterById(
 	response := newsletter.ToResponse(user)
 	log.Info("Get newsletter by id", "owner", response.Owner)
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
 
@@ -206,6 +251,7 @@ func (h NewsletterHandler) HideNewsletter(
 		status = "newsletter visible"
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(
 		gen.StatusResponse{
 			Status: status,

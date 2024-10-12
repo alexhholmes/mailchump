@@ -40,21 +40,32 @@ func Run() error {
 	}
 	defer closer()
 
-	// Get an `http.Handler` that we can use
-	r := http.NewServeMux()
+	// Base router for page serving
+	baseRouter := http.NewServeMux()
+	baseRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "templates/index.html")
+	})
+
+	// Create a sub-router with the generated OpenAPI spec. Register the API
+	// routes, and strip the `/api` prefix since we don't specify it in the API
+	// spec.
 	h := gen.HandlerWithOptions(
 		&server, gen.StdHTTPServerOptions{
-			BaseRouter: r,
+			BaseRouter: http.NewServeMux(),
 			Middlewares: []gen.MiddlewareFunc{
 				middleware.RecoveryMiddleware,
 				middleware.LogRequestMiddleware,
-				middleware.HeadersMiddleware,
 				middleware.CreateAuthMiddleware(),
 			},
 		},
 	)
+	baseRouter.Handle("/api/", http.StripPrefix("/api", h))
+	baseRouter.Handle("/healthcheck", h)
+
 	s := &http.Server{
-		Handler: h,
+		Handler: baseRouter,
 		Addr:    "0.0.0.0:8080",
 	}
 

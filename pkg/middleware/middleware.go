@@ -30,22 +30,6 @@ func CreateAuthMiddleware() func(next http.Handler) http.Handler {
 	}
 }
 
-func HeadersMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			contentType := strings.ToLower(r.Header.Get("Content-Type"))
-			if contentType != "" && !strings.HasPrefix(contentType, "application/json") {
-				http.Error(w, "Content-Type header must be application/json", http.StatusBadRequest)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-
-			next.ServeHTTP(w, r)
-		},
-	)
-}
-
 func LogRequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
@@ -64,8 +48,9 @@ func LogRequestMiddleware(next http.Handler) http.Handler {
 					return ""
 				}(),
 			)
-			ctx := context.WithValue(r.Context(), util.ContextLogger, slogWithReq)
+			slogWithReq.Info("Request")
 
+			ctx := context.WithValue(r.Context(), util.ContextLogger, slogWithReq)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		},
 	)

@@ -6,7 +6,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:8080/
     description: Localhost server
     variables:
       port:
@@ -28,55 +28,39 @@ paths:
                 $ref: '#/components/schemas/AllNewsletterResponse'
         '500':
           $ref: '#/components/responses/internal-error'
-#    post:
-#      operationId: CreateNewsletter
-#      description: Create a newsletter (authors only)
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              required:
-#                - title
-#                - description
-#              properties:
-#                title:
-#                  type: string
-#                  example: My Newsletter
-#                description:
-#                  type: string
-#                  example: This is my newsletter
-#                authors:
-#                  type: array
-#                  description: List of author UUIDs; default is the authenticated user, which is always included
-#                  items:
-#                    type: string
-#                  example: [550e8400-e29b-41d4-a716-446655440000]
-#      responses:
-#        '200':
-#          description: newsletter created
-#          content:
-#            application/json:
-#              schema:
-#                type: object
-#                required:
-#                  - message
-#                  - newsletter
-#                properties:
-#                  message:
-#                    type: string
-#                    example: newsletter created
-#                  newsletter:
-#                    $ref: '#/components/schemas/NewsletterResponse'
-#        '400':
-#          $ref: '#/components/responses/bad-request'
-#        '403':
-#          $ref: '#/components/responses/forbidden'
-#        '404':
-#          $ref: '#/components/responses/not-found'
-#        '500':
-#          $ref: '#/components/responses/internal-error'
+    post:
+      operationId: CreateNewsletter
+      description: Create a newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNewsletterRequest'
+      responses:
+        '200':
+          description: newsletter created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - newsletter
+                properties:
+                  message:
+                    type: string
+                    example: newsletter created
+                  newsletter:
+                    $ref: '#/components/schemas/NewsletterResponse'
+        '400':
+          $ref: '#/components/responses/bad-request'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-error'
   /newsletters/{id}:
     get:
       operationId: GetNewsletterById
@@ -102,37 +86,37 @@ paths:
         '500':
           $ref: '#/components/responses/internal-error'
     delete:
-        operationId: DeleteNewsletterById
-        description: Delete a newsletter (owning author only)
-        parameters:
-          - name: id
-            in: path
-            required: true
-            description: The ID of the newsletter
-            schema:
-              type: string
-        responses:
-          '200':
-            description: newsletter deleted with recovery period
-            content:
-              application/json:
-                schema:
-                  type: object
-                  required:
-                    - message
-                    - newsletter
-                  properties:
-                    message:
-                      type: string
-                      example: newsletter deleted
-                    newsletter:
-                      $ref: '#/components/schemas/NewsletterResponse'
-          '403':
-            $ref: '#/components/responses/forbidden'
-          '404':
-            $ref: '#/components/responses/not-found'
-          '500':
-            $ref: '#/components/responses/internal-error'
+      operationId: DeleteNewsletterById
+      description: Delete a newsletter (owning author only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the newsletter
+          schema:
+            type: string
+      responses:
+        '200':
+          description: newsletter deleted with recovery period
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - newsletter
+                properties:
+                  message:
+                    type: string
+                    example: newsletter deleted
+                  newsletter:
+                    $ref: '#/components/schemas/NewsletterResponse'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-error'
   /newsletters/{id}/hide:
     patch:
       operationId: HideNewsletter
@@ -145,18 +129,18 @@ paths:
           schema:
             type: string
       responses:
-          '200':
-              description: newsletter visibility status
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/StatusResponse'
-          '403':
-              $ref: '#/components/responses/forbidden'
-          '404':
-              $ref: '#/components/responses/not-found'
-          '500':
-              $ref: '#/components/responses/internal-error'
+        '200':
+          description: newsletter visibility status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not-found'
+        '500':
+          $ref: '#/components/responses/internal-error'
   /healthcheck:
     get:
       responses:
@@ -193,6 +177,18 @@ components:
           schema:
             $ref: '#/components/schemas/InternalServerError'
   schemas:
+    CreateNewsletterRequest:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          example: My Newsletter
+        description:
+          type: string
+          example: This is my newsletter
     AllNewsletterResponse:
       type: object
       required:
@@ -246,8 +242,8 @@ components:
           type: string
           example: 2021-01-01T00:00:00Z
         updated_at:
-            type: string
-            example: 2021-01-01T00:00:00Z
+          type: string
+          example: 2021-01-01T00:00:00Z
         post_count:
           type: integer
           example: 0
@@ -275,25 +271,6 @@ components:
         status:
           type: string
           example: ok
-    SubscriptionRequest:
-      type: object
-      required:
-        - email
-      properties:
-        email:
-          type: string
-          example: user@example.com
-    SubscriptionResponse:
-      type: object
-      required:
-        - status
-      properties:
-        status:
-          type: string
-          example: subscribed
-        email:
-          type: string
-          example:
     BadRequest:
       type: object
       required:

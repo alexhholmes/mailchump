@@ -18,6 +18,17 @@ type AllNewsletterResponse struct {
 	Newsletters []NewsletterResponse `json:"newsletters"`
 }
 
+// BadRequest defines model for BadRequest.
+type BadRequest struct {
+	Message string `json:"message"`
+}
+
+// CreateNewsletterRequest defines model for CreateNewsletterRequest.
+type CreateNewsletterRequest struct {
+	Description string `json:"description"`
+	Title       string `json:"title"`
+}
+
 // Forbidden defines model for Forbidden.
 type Forbidden struct {
 	Message string `json:"message"`
@@ -61,6 +72,9 @@ type StatusResponse struct {
 // InternalError defines model for internal-error.
 type InternalError = InternalServerError
 
+// CreateNewsletterJSONRequestBody defines body for CreateNewsletter for application/json ContentType.
+type CreateNewsletterJSONRequestBody = CreateNewsletterRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -69,6 +83,9 @@ type ServerInterface interface {
 
 	// (GET /newsletters)
 	GetNewsletters(w http.ResponseWriter, r *http.Request)
+
+	// (POST /newsletters)
+	CreateNewsletter(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /newsletters/{id})
 	DeleteNewsletterById(w http.ResponseWriter, r *http.Request, id string)
@@ -110,6 +127,21 @@ func (siw *ServerInterfaceWrapper) GetNewsletters(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetNewsletters(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateNewsletter operation middleware
+func (siw *ServerInterfaceWrapper) CreateNewsletter(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateNewsletter(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -313,6 +345,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/healthcheck", wrapper.GetHealthcheck)
 	m.HandleFunc("GET "+options.BaseURL+"/newsletters", wrapper.GetNewsletters)
+	m.HandleFunc("POST "+options.BaseURL+"/newsletters", wrapper.CreateNewsletter)
 	m.HandleFunc("DELETE "+options.BaseURL+"/newsletters/{id}", wrapper.DeleteNewsletterById)
 	m.HandleFunc("GET "+options.BaseURL+"/newsletters/{id}", wrapper.GetNewsletterById)
 	m.HandleFunc("PATCH "+options.BaseURL+"/newsletters/{id}/hide", wrapper.HideNewsletter)

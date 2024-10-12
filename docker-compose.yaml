@@ -17,6 +17,8 @@ services:
       - postgres
       - redis
     entrypoint: ["./wait-for-postgres.sh", "./mailchump", "username", "mailchump"]
+    volumes:
+      - ./templates:/app/templates
 
   postgres:
     image: postgres:latest

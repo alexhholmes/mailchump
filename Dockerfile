@@ -20,6 +20,7 @@ ENTRYPOINT ["./mailchump"]
 FROM alpine:latest AS prod
 WORKDIR /app
 COPY --from=builder /app/config/app.yaml config/app.yaml
+COPY --from=builder /app/templates/ templates/
 COPY --from=builder /app/bin/mailchump mailchump
 EXPOSE 8080
 ENTRYPOINT ["./mailchump"]

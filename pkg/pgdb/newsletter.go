@@ -83,56 +83,53 @@ func (c *Client) GetNewsletterOwnerID(ctx context.Context, id string) (uuid.UUID
 	return ownerID, nil
 }
 
-func (c *Client) CreateNewsletter(ctx context.Context, n model.Newsletter) (
-	model.Newsletter,
-	error,
-) {
-	now := time.Now().UTC()
-
-	n.Id = uuid.New()
-	n.Created = now
-	n.Updated = now
-
-	// Perform a transaction that inserts the newsletter and then adds the owner as an author
-	tx, err := c.db.Begin()
-	if err != nil {
-		return model.Newsletter{}, err
-	}
-	defer HandleTxError(err, tx)
-
-	// Create the newsletter
-	res, err := tx.ExecContext(ctx,
-		`INSERT INTO newsletters (id, owner, title, slug, description, created, updated, post_count, hidden)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		ON CONFLICT (id) DO NOTHING`,
-		n.Id, n.OwnerID, n.Title, n.Slug, n.Description, n.Created, n.Updated, n.PostCount, n.Hidden,
-	)
-	if err != nil {
-		return model.Newsletter{}, err
-	}
-
-	// Check if the newsletter was inserted
-	if affected, err := res.RowsAffected(); err != nil {
-		// db driver does not support RowsAffected
-		log.Fatal(err)
-	} else if affected == 0 {
-		return model.Newsletter{}, model.ErrAlreadyExists
-	}
-
-	// Add the owner as an author of the newsletter
-	if _, err = tx.ExecContext(ctx,
-		`INSERT INTO newsletter_authors (newsletter, author)
-		VALUES ($1, $2)`,
-		n.Id, n.OwnerID,
-	); err != nil {
-		return model.Newsletter{}, err
-	}
-
-	if err = tx.Commit(); err != nil {
-		return model.Newsletter{}, err
-	}
-
-	return n, nil
+func (c *Client) CreateNewsletter(ctx context.Context, n model.Newsletter) error {
+	// now := time.Now().UTC()
+	//
+	// n.Id = uuid.New()
+	// n.Created = now
+	// n.Updated = now
+	// n.Slug = strings.Replace(n.Title, " ", "_", -1)
+	//
+	// // Perform a transaction that inserts the newsletter and then adds the owner as an author
+	// txOpts := &sql.TxOptions{
+	// 	Isolation: sql.LevelSerializable,
+	// 	ReadOnly:  false,
+	// }
+	// tx, err := c.db.BeginTx(ctx, txOpts)
+	// if err != nil {
+	// 	return model.ErrTxBegin
+	// }
+	// defer HandleTxError(err, tx)
+	//
+	// // Create the newsletter
+	// // res, err := tx.ExecContext(ctx)
+	// // if err != nil {
+	// // 	return err
+	// // }
+	//
+	// // Check if the newsletter was inserted
+	// if affected, err := res.RowsAffected(); err != nil {
+	// 	// db driver does not support RowsAffected
+	// 	log.Fatal(err)
+	// } else if affected == 0 {
+	// 	return model.ErrNoChanges
+	// }
+	//
+	// // Add the owner as an author of the newsletter
+	// if _, err = tx.ExecContext(ctx,
+	// 	`INSERT INTO newsletter_authors (newsletter, author)
+	// 	VALUES ($1, $2)`,
+	// 	n.Id, n.OwnerID,
+	// ); err != nil {
+	// 	return err
+	// }
+	//
+	// if err = tx.Commit(); err != nil {
+	// 	return model.ErrTxCommit
+	// }
+	//
+	return nil
 }
 
 func (c *Client) DeleteNewsletter(ctx context.Context, id string) error {
