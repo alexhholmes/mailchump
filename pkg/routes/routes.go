@@ -16,7 +16,7 @@ import (
 	"mailchump/pkg/api"
 	"mailchump/pkg/api/gen"
 	"mailchump/pkg/middleware"
-	"mailchump/pkg/routes/tmpl"
+	"mailchump/pkg/tmpl"
 )
 
 // Run starts the server, initializing the logger and a handler instance that will be
