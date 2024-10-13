@@ -1,2 +1,3 @@
 bin/
 *.gen.go
+*_templ.go

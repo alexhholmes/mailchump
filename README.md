@@ -11,24 +11,19 @@ _Why use big import when small import work good?_
 A list of packages used (from `go.mod`):
 ```text
 github.com/lib/pq               # PostgresDB driver for database/sql
-github.com/google/uuid          # IDs for database primary keys
+github.com/google/uuid          # IDs for some models
 github.com/oapi-codegen/runtime # Open API 3 http server codegen
-github.com/a-h/templ            # HTML templating engine
 github.com/vektra               # Mocking for testing
 github.com/redis/go-redis       # Caching
 github.com/stretchr/testify     # Testing
 ```
 
-GoAT (Golang, AlpineJS, TailwindCSS) and GoTH (Golang, Templ, HTMX) stack are in.
-
-
 This repository aims to reduce ~~carbon emissions~~ tech debt by 100% through sustainable practices.
 
 ## Project Setup
-Codegen from OpenAPI spec and HTML templating (needed for IDE indexing support):
+Codegen from OpenAPI spec (needed for IDE indexing support):
 ```shell
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-go install github.com/a-h/templ/cmd/templ@latest
 ```
 
 Codegen for testing mocks:

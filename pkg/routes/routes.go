@@ -4,6 +4,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 	"mailchump/pkg/api"
 	"mailchump/pkg/api/gen"
 	"mailchump/pkg/middleware"
-	"mailchump/pkg/tmpl"
+	"mailchump/pkg/pgdb"
 )
 
 // Run starts the server, initializing the logger and a handler instance that will be
@@ -31,6 +32,14 @@ func Run() error {
 	}
 	slog.SetDefault(logger)
 
+	db, err := pgdb.NewClient()
+	if err != nil {
+		return fmt.Errorf("failed to open a db connection: %w", err)
+	}
+	defer func(db *pgdb.Client) {
+		_ = db.Close()
+	}(db)
+
 	// Base router for page serving
 	baseRouter := http.NewServeMux()
 	baseRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -38,31 +47,12 @@ func Run() error {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "templates/index.html")
 	})
-	baseRouter.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "text/html")
-
-		component := tmpl.Hello("world")
-		err := component.Render(r.Context(), w)
-		if err != nil {
-			slog.Error("Failed to render component", "error", err)
-		}
-	})
-
-	// Initialize the API server, this creates the DB connection and other
-	// resources. Keep the separate from the base router for page serving.
-	apiServer, closer, err := api.NewHandler()
-	if err != nil {
-		slog.Error("Server fatal startup error", "error", err)
-		return err
-	}
-	defer closer()
 
 	// Create a sub-router with the generated OpenAPI spec. Register the API
 	// routes, and strip the `/api` prefix since we don't specify it in the API
 	// spec.
 	h := gen.HandlerWithOptions(
-		&apiServer, gen.StdHTTPServerOptions{
+		api.NewHandler(db), gen.StdHTTPServerOptions{
 			BaseRouter: http.NewServeMux(),
 			Middlewares: []gen.MiddlewareFunc{
 				middleware.RecoveryMiddleware,
@@ -97,7 +87,7 @@ func Run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err = s.Shutdown(ctx); err != nil {
-		log.Fatalf("Server failed to shutdown: %s", err.Error())
+		log.Fatalf("Server failed to shutdown gracefully: %s", err.Error())
 	}
 	slog.Info("Server shutdown successfully")
 

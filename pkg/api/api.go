@@ -1,9 +1,6 @@
 package api
 
 import (
-	"fmt"
-	"log"
-
 	_ "github.com/lib/pq"
 
 	"mailchump/pkg/api/gen"
@@ -24,18 +21,8 @@ type Handler struct {
 
 // NewHandler creates a new Handler instance, initializing the database
 // connection.
-func NewHandler() (h Handler, close func(), err error) {
-	db, err := pgdb.NewClient()
-	if err != nil {
-		return Handler{}, nil, fmt.Errorf("failed to open a db connection: %w", err)
-	}
-
+func NewHandler(db *pgdb.Client) (h Handler) {
 	return Handler{
-			NewsletterHandler: newsletters.NewsletterHandler{DB: db},
-		}, func() {
-			err = db.Close()
-			if err != nil {
-				log.Fatalf("failed to close db connection: %s", err.Error())
-			}
-		}, nil
+		NewsletterHandler: newsletters.NewsletterHandler{DB: db},
+	}
 }
